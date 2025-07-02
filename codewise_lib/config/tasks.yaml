@@ -1,0 +1,40 @@
+analise_estrutura:
+  description: >
+    Com base na seguinte mensagem de commit: "{input}",
+    realize uma inspeção na estrutura do projeto, mapeando diretórios, arquivos e padrões utilizados.
+    Considere como essa mudança pode impactar a organização do código.
+  expected_output: >
+    Relatório arquitetura_atual.md com estrutura, sugestões e justificativas técnicas relacionadas à mudança.
+  agent: senior_architect
+
+analise_heuristicas:
+  description: >
+    Considerando o commit informado: "{input}",
+    analise as integrações, bibliotecas externas e APIs afetadas pela mudança.
+  expected_output: >
+    Documento analise_heuristicas_integracoes.md com mapa de integrações e sugestões com base na alteração feita.
+  agent: senior_analytics
+
+analise_solid:
+  description: >
+    Com base no commit: "{input}",
+    avalie a aderência da mudança aos princípios S.O.L.I.D., identificando possíveis violações ou melhorias.
+  expected_output: >
+    Relatório analise_solid.md com violações e recomendações de refatoração baseadas na alteração feita.
+  agent: quality_consultant
+
+padroes_projeto:
+  description: >
+    A partir da seguinte descrição de commit: "{input}",
+    avalie se há aplicação correta ou ausência de padrões de projeto como Singleton, Strategy ou Factory.
+  expected_output: >
+    Documento padroes_de_projeto.md com sugestões aplicadas ao cenário descrito no commit.
+  agent: quality_control_manager
+
+summarize_analysis:
+  description: >
+    Com base na análise técnica a seguir: "{analysis_result}",
+    escreva um resumo objetivo e claro descrevendo o que foi implementado no código analisado com base nas boas práticas de Pull Request.
+  expected_output: >
+    Um parágrafo bem estruturado com as alterações realizadas, pronto para ser usado como descrição de um Pull Request em (pt-br).
+
