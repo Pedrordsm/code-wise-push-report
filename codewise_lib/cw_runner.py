@@ -83,6 +83,22 @@ class CodewiseRunner:
             )
             resultado_final = Crew(agents=[resumo_agent], tasks=[resumo_task]).kickoff()
 
+            mentor_agent = codewise_instance.code_mentor()
+            mentor_task = Task(
+                description="Com base nas análises técnicas realizadas, comente e sugira recursos educacionais personalizados com base nas mudanças **obrigatoriamente em Português do Brasil**, bem formatado em markdown, com links que possuam conteúdo para melhorar o código.",
+                expected_output="Sugestões de melhoria.",
+                agent=mentor_agent,
+                context=analysis_crew.tasks
+            )
+            resultado_mentor = Crew(agents=[mentor_agent],tasks=[mentor_task]).kickoff()
+            mentor_file_path = os.path.join(output_dir_path, "sugestoes_aprendizado.md")
+            try:
+                with open(mentor_file_path, "w", encoding="utf-8") as f:
+                    f.write(str(resultado_mentor))
+                    print(f"   - Arquivo 'sugestoes_aprendizado.md' salvo com sucesso em '{output_dir_path}'.", file=sys.stderr)
+            except Exception as e:
+                print(f"   - ERRO ao salvar o arquivo 'sugestoes_aprendizado.md': {e}", file=sys.stderr)
+                
         elif modo == 'lint':
             agent = codewise_instance.quality_consultant()
             task = Task(description=f"Analise rapidamente as seguintes mudanças de código ('git diff') e aponte APENAS problemas óbvios ou code smells. A resposta deve ser **obrigatoriamente em Português do Brasil**. Seja conciso. Se não houver problemas, retorne 'Nenhum problema aparente detectado.'.\n\nCódigo a ser analisado:\n{contexto_para_ia}", expected_output="Uma lista curta em bullet points com sugestões, ou uma mensagem de que está tudo ok.", agent=agent)

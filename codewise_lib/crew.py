@@ -48,6 +48,8 @@ class Codewise:
     def quality_control_manager(self) -> Agent: return Agent(config=self.agents_config['quality_control_manager'], llm=self.llm, verbose=False)
     @agent
     def summary_specialist(self) -> Agent: return Agent(config=self.agents_config['summary_specialist'], llm=self.llm, verbose=False)
+    @agent
+    def code_mentor(self) -> Agent: return Agent(config=self.agents_config['code_mentor'], llm=self.llm, verbose=False)
     
     @task
     def task_estrutura(self) -> Task:
@@ -69,15 +71,20 @@ class Codewise:
     def task_summarize(self) -> Task:
         cfg = self.tasks_config['summarize_analysis']
         return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.summary_specialist())
+    
+    @task
+    def task_mentoring(self) -> Task:
+        cfg = self.tasks_config['mentoring_task']
+        return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.code_mentor())
 
     @crew
     def crew(self) -> Crew:
         return Crew(
-            agents=[self.senior_architect(), self.senior_analytics(), self.quality_consultant(), self.quality_control_manager()],
-            tasks=[self.task_estrutura(), self.task_heuristicas(), self.task_solid(), self.task_padroes()],
+            agents=[self.senior_architect(), self.senior_analytics(), self.quality_consultant(), self.quality_control_manager(),self.code_mentor()],
+            tasks=[self.task_estrutura(), self.task_heuristicas(), self.task_solid(), self.task_padroes(),self.task_mentoring()],
             process=Process.sequential
         )
-
+    
     def summary_crew(self) -> Crew:
         return Crew(
             agents=[self.summary_specialist()],

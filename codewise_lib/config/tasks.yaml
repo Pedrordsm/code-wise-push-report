@@ -38,3 +38,10 @@ summarize_analysis:
   expected_output: >
     Um parágrafo bem estruturado com as alterações realizadas, pronto para ser usado como descrição de um Pull Request em (pt-br).
 
+mentoring_task:
+  description: > 
+    Com base nas análises técnicas realizadas,
+    identifique oportunidades de aprendizado e sugira recursos educacionais personalizados para ajudar o desenvolvedor a melhorar suas habilidades técnicas.
+  expected_output: >
+    Documento sugestoes_aprendizado.md com recursos educacionais específicos (artigos, cursos, vídeos) organizados por tópico e conectados aos problemas identificados.
+  agent: code_mentor
