@@ -5,6 +5,7 @@ import yaml
 from dotenv import load_dotenv
 from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
+from codewise_lib.create_llm import create_llm
 
 @CrewBase
 class Codewise:
@@ -12,17 +13,8 @@ class Codewise:
     def __init__(self, commit_message: str = ""):
         load_dotenv()
         self.commit_message = commit_message
-        if not os.getenv("GEMINI_API_KEY"):
-            print("Erro: A variável de ambiente GEMINI_API_KEY não foi definida.")
-            sys.exit(1)
-        try:
-            self.llm = LLM(
-                model="gemini/gemini-2.0-flash",
-                temperature=0.7
-            )
-        except Exception as e:
-            print(f"Erro ao inicializar o LLM. Verifique sua chave de API e dependências. Erro: {e}")
-            sys.exit(1)
+
+        self.llm = create_llm() # chama a criação da llm que o usuário tiver escolhido dno .env
         
         base_dir = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(base_dir, "config")
