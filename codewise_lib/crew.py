@@ -20,7 +20,7 @@ class Codewise:
                 sys.exit(1)
             try:
                 self.llm = LLM(
-                    model= os.getenv("AI_MODEL"),
+                    model= "gemini/" + os.getenv("AI_MODEL"),
                     temperature=0.7
                 )
             except Exception as e:
@@ -32,7 +32,7 @@ class Codewise:
                 sys.exit(1)
             try:
                 self.llm = LLM(
-                    model= os.getenv("AI_MODEL"),
+                    model= "openai/" + os.getenv("AI_MODEL"),
                     temperature=0.8,
                 )
             except Exception as e:
