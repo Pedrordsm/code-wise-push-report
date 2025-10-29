@@ -12,18 +12,32 @@ class Codewise:
     def __init__(self, commit_message: str = ""):
         load_dotenv()
         self.commit_message = commit_message
-        if not os.getenv("GEMINI_API_KEY"):
-            print("Erro: A variável de ambiente GEMINI_API_KEY não foi definida.")
-            sys.exit(1)
-        try:
-            self.llm = LLM(
-                model="gemini/gemini-2.0-flash",
-                temperature=0.7
-            )
-        except Exception as e:
-            print(f"Erro ao inicializar o LLM. Verifique sua chave de API e dependências. Erro: {e}")
-            sys.exit(1)
-        
+        provider = os.getenv("AI_PROVIDER","gemini").upper()
+
+        if provider == "GEMINI":
+            if not os.getenv("GEMINI_API_KEY"):
+                print("Erro: A variável de ambiente GEMINI_API_KEY não foi definida.")
+                sys.exit(1)
+            try:
+                self.llm = LLM(
+                    model= os.getenv("AI_MODEL"),
+                    temperature=0.7
+                )
+            except Exception as e:
+                print(f"Erro ao inicializar o LLM. Verifique sua chave de API e dependências. Erro: {e}")
+                sys.exit(1)
+        elif provider == "OPENAI":
+            if not os.getenv("OPENAI_API_KEY"):
+                print("Erro: A variável de ambiente OPENAI_API_KEY não foi definida.")
+                sys.exit(1)
+            try:
+                self.llm = LLM(
+                    model= os.getenv("AI_MODEL"),
+                    temperature=0.8,
+                )
+            except Exception as e:
+                print(f"Erro ao inicializar o LLM. Verifique sua chave de API e dependências. Erro: {e}")
+                sys.exit(1)
         base_dir = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(base_dir, "config")
         agents_path = os.path.join(config_path, "agents.yaml")
