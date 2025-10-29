@@ -5,6 +5,7 @@ import yaml
 from dotenv import load_dotenv
 from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
+from .select_llm import create_llm
 
 @CrewBase
 class Codewise:
@@ -12,32 +13,10 @@ class Codewise:
     def __init__(self, commit_message: str = ""):
         load_dotenv()
         self.commit_message = commit_message
-        provider = os.getenv("AI_PROVIDER","gemini").upper()
-
-        if provider == "GEMINI":
-            if not os.getenv("GEMINI_API_KEY"):
-                print("Erro: A variável de ambiente GEMINI_API_KEY não foi definida.")
-                sys.exit(1)
-            try:
-                self.llm = LLM(
-                    model= "gemini/" + os.getenv("AI_MODEL"),
-                    temperature=0.7
-                )
-            except Exception as e:
-                print(f"Erro ao inicializar o LLM. Verifique sua chave de API e dependências. Erro: {e}")
-                sys.exit(1)
-        elif provider == "OPENAI":
-            if not os.getenv("OPENAI_API_KEY"):
-                print("Erro: A variável de ambiente OPENAI_API_KEY não foi definida.")
-                sys.exit(1)
-            try:
-                self.llm = LLM(
-                    model= "openai/" + os.getenv("AI_MODEL"),
-                    temperature=0.8,
-                )
-            except Exception as e:
-                print(f"Erro ao inicializar o LLM. Verifique sua chave de API e dependências. Erro: {e}")
-                sys.exit(1)
+        provider = os.getenv("AI_PROVIDER").upper()
+        model = os.getenv("AI_MODEL")
+        self.llm = create_llm(provider,model)
+        
         base_dir = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(base_dir, "config")
         agents_path = os.path.join(config_path, "agents.yaml")
