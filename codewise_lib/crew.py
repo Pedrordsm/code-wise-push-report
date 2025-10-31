@@ -13,8 +13,8 @@ class Codewise:
     def __init__(self, commit_message: str = ""):
         load_dotenv()
         self.commit_message = commit_message
-        provider = os.getenv("AI_PROVIDER").upper()
-        model = os.getenv("AI_MODEL")
+        provider = os.getenv("AI_PROVIDER").upper() #deixar na documentação as llms suportadas e do jeito certo da escrita do provider
+        model = os.getenv("AI_MODEL") # mesma coisa para o modelo
         self.llm = create_llm(provider,model)
         
         base_dir = os.path.dirname(os.path.abspath(__file__))

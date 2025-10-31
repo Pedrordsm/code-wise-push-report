@@ -2,4 +2,10 @@ crewai
 python-dotenv
 pyyaml
 google-generativeai
-langchain-google-genai  
+langchain-google-genai
+cohere
+cohere-langchain
+groq
+groq-langchain
+openai
+openai-langchain
