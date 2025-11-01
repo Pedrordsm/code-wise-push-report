@@ -13,8 +13,10 @@ class Codewise:
     def __init__(self, commit_message: str = ""):
         load_dotenv()
         self.commit_message = commit_message
-        provider = os.getenv("AI_PROVIDER").upper()
-        model = os.getenv("AI_MODEL")
+        # self para utilizar na task de analise da politica
+        self.provider = os.getenv("AI_PROVIDER").upper()
+        self.model = os.getenv("AI_MODEL")
+        ##
         self.llm = create_llm(provider,model)
         
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -43,6 +45,12 @@ class Codewise:
     def summary_specialist(self) -> Agent: return Agent(config=self.agents_config['summary_specialist'], llm=self.llm, verbose=False)
     @agent
     def code_mentor(self) -> Agent: return Agent(config=self.agents_config['code_mentor'], llm=self.llm, verbose=False)
+
+    @agent
+    def dataCollect_policy_analytics(self) -> Agent: return Agent(config=self.agents_config['dataCollect_policy_analytics'], llm=self.llm, verbose=False)
+
+    @agent
+    def lgpd_judge(self) -> Agent: return Agent(config=self.agents_config['lgpd_judge'], llm=self.llm, verbose = False)
     
     @task
     def task_estrutura(self) -> Task:
@@ -69,12 +77,28 @@ class Codewise:
     def task_mentoring(self) -> Task:
         cfg = self.tasks_config['mentoring_task']
         return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.code_mentor())
+    
+    @task
+    def task_policy(self) -> Task:
+        cfg = self.tasks_config['policy_analytics']
+
+        formatted_description = cfg['description'].format(
+            IA_PROVIDER=self.provider,
+            IA_MODEL=self.model
+        )
+
+        return Task(description=formatted_description, expected_output=cfg['expected_output'], agent=self.dataCollect_policy_analytics())
+
+    @task
+    def task_judging(self) -> Task:
+        cfg = self.tasks_config['lgpd_judging']
+        return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.task_policy_analytics())
 
     @crew
     def crew(self) -> Crew:
         return Crew(
             agents=[self.senior_architect(), self.senior_analytics(), self.quality_consultant(), self.quality_control_manager(),self.code_mentor()],
-            tasks=[self.task_estrutura(), self.task_heuristicas(), self.task_solid(), self.task_padroes(),self.task_mentoring()],
+            tasks=[self.task_estrutura(), self.task_heuristicas(), self.task_solid(), self.task_padroes(),self.task_mentoring(), self.task_judging()],
             process=Process.sequential
         )
     

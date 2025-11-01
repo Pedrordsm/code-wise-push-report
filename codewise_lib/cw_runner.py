@@ -10,8 +10,9 @@ class CodewiseRunner:
         self.caminho_entrada = os.path.join(self.BASE_DIR, ".entrada_temp.txt")
 
     def executar(self, caminho_repo: str, nome_branch: str, modo: str):
-        contexto_para_ia = ""
         
+        contexto_para_ia = ""
+
         if modo == 'lint':
             resultado_git = obter_mudancas_staged(caminho_repo)
             
@@ -98,6 +99,27 @@ class CodewiseRunner:
                     print(f"   - Arquivo 'sugestoes_aprendizado.md' salvo com sucesso em '{output_dir_path}'.", file=sys.stderr)
             except Exception as e:
                 print(f"   - ERRO ao salvar o arquivo 'sugestoes_aprendizado.md': {e}", file=sys.stderr)
+
+            
+            # Tentativa de colocar a analise lgpd para rodar antes do envio dos dados sensiveis
+            policy_agent = codewise_instance.dataCollect_policy_analytics()
+            provedor_usado = codewise_instance.provider
+            modelo_api_key = codewise_instance.model
+
+            policy_analytics_task = Task(
+                description=f"Analise a documentação oficial da política de coleta de dados do provedor '{provedor_usado}' para o modelo '{modelo_api_key}'. Crie um relatório, **obrigatoriamente em Português do Brasil**, focado nos pontos-chave de como os dados de entrada do usuário (inputs de API) são tratados, incluindo coleta, uso e retenção.",
+                expected_output="Um relatório sobre a política de coleta de dados do modelo de api utilizado",
+                agent=policy_analytics_agent
+            )
+            resultado_policy = Crew(agents=[policy_analytics_agent], tasks=[policy_analytics_task]).kickoff()
+            policy_file_path = os.path.join(output_dir_path, "analise_politica_coleta_de_dados.md")
+            try:
+                with open(policy_file_path, "w", encoding="utf-8") as f:
+                    f.write(str(resultado_policy))
+                    print(f"   - Arquivo 'analise_politica_coleta_de_dados.md' salvo com sucesso em '{output_dir_path}'.", file=sys.stderr)
+            except Exception as e:
+                print(f"    - ERRO ao salvar o arquivo 'analise_politica_coleta_de_dados.md': {e}", file=sys.stderr)
+            # fim
                 
         elif modo == 'lint':
             agent = codewise_instance.quality_consultant()

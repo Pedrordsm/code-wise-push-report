@@ -45,3 +45,19 @@ mentoring_task:
   expected_output: >
     Documento sugestoes_aprendizado.md com recursos educacionais específicos (artigos, cursos, vídeos) organizados por tópico e conectados aos problemas identificados.
   agent: code_mentor
+
+policy_analytics:
+  description: >
+    Crie um relatório sobre a política de coleta de dados do "{IA_PROVIDER}" para o modelo "{IA_MODEL}"
+    com base na documentação oficial.
+  expected_output: >
+    Relatório data_collect_policy.md com um resumo dos principais pontos sobre a política de coleta de dados do provedor.
+  agent: dataCollect_policy_analytics
+
+lgpd_judging:
+  description: >
+    Com base nas leis LGPD e no relatório da analise da documentação,
+    determine se o provedor da api key está respeitando ou não as leis LGPD.
+  expected_output: >
+    Documento status_lgpd.md com as provas ou artigos utilizados para determinar a decisão tomada.
+  agent: lgpd_judge
