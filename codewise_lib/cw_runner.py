@@ -16,7 +16,6 @@ class CodewiseRunner:
         codewise_instance = Codewise()
 
         print(f"Verificando a política de coleta de dados do provedor com base neste modelo de api key...")
-
         #lgpd crew
         lgpd_check_crew = codewise_instance.lgpd_crew()
 
@@ -75,8 +74,8 @@ class CodewiseRunner:
             print(f"    - ERRO ao ler o arquivo 'julgamento_lgpd.md': {e}", file=sys.stderr)
         
         print(status)
-        """
-        if(status = True):
+        
+        if(status == True):
 
             print("Provedor requisitado está respeitando as normas LGPD, podemos proseguir com a análise.")
             print(f"Acesse os arquivos 'analise_politica_coleta_de_dados.md.' e 'julgamento_lgpd.md' para comprovações do julgamento.")
@@ -184,7 +183,7 @@ class CodewiseRunner:
             print(f"Provedor requisitado não está dentro das normas LGPD! Por conta disso, as análises foram interrompidas antes que seus dados fossem enviados.")
             print(f"Tente novamente escolhendo outro provedor ou modelo de api key.")
             print(f"Para mais informações, acesse os arquivos 'analise_politica_coleta_de_dados.md.' e 'julgamento_lgpd.md'.")
-        """
+        
     def _ler_arquivo(self, file_path: str) -> str:
         try:
             with open(file_path, "r", encoding="utf-8") as f: return f.read()
