@@ -1,164 +1,217 @@
-#  CodeWise
+# 🧠 **CodeWise**
 
-* Ferramenta instalável via pip que usa IA para analisar o código e automatizar a documentação de Pull Requests através de hooks do Git.
-
-## Funcionalidades Principais
-- **Geração de Título:** Cria títulos de PR claros e concisos seguindo o padrão *Conventional Commits*.
-- **Geração de Descrição:** Escreve descrições detalhadas baseadas nas alterações do código.
-- **Análise Técnica:** Posta um comentário no PR com um resumo executivo de melhorias de arquitetura, aderência a princípios S.O.L.I.D. e outros pontos de qualidade.
-- **Automação com hooks:** Integra-se ao seu fluxo de trabalho Git para rodar automaticamente a cada `git commit` e `git push`.
+> **Ferramenta instalável via `pip` que usa IA para analisar o código e automatizar a documentação de Pull Requests através de hooks do Git.**
 
 ---
 
-## Guia de Instalação 
-Siga estes passos para instalar e configurar o CodeWise em qualquer um dos seus repositórios.
+## 🚀 **Funcionalidades Principais**
+
+- 🏷️ **Geração de Título:** Cria títulos de PR claros e concisos seguindo o padrão *Conventional Commits*.  
+- 📝 **Geração de Descrição:** Escreve descrições detalhadas baseadas nas alterações do código.  
+- 🧩 **Análise Técnica:** Posta um comentário no PR com um resumo executivo de melhorias de arquitetura, aderência a princípios S.O.L.I.D. e outros pontos de qualidade.  
+- 🔁 **Automação com Hooks:** Integra-se ao seu fluxo de trabalho Git para rodar automaticamente a cada `git commit` e `git push`.  
+- 🤖 **Flexibilidade de IA:** Escolha qual provedor de IA usar (`Cohere`, `Google Gemini`, `Groq`, `OpenAI`) através de uma simples configuração.  
+- 🔒 **Verificação de Privacidade (LGPD):** Analisa automaticamente a política de coleta de dados do provedor de IA antes de enviar o seu código.
 
 ---
 
-### Passo 1: Pré-requisitos (ter no PC antes de tudo)
+## ⚙️ **Guia de Instalação**
 
-Antes de começar, garanta que você tenha as seguintes ferramentas instaladas em seu sistema:
-
-1.  **Python** (versão 3.11 ou superior).
-2.  **Git**.
-3.  **GitHub CLI (`gh`)**: Após instalar em (https://cli.github.com), logue com sua conta do GitHub executando `gh auth login` no seu terminal (só precisa fazer isso uma vez por PC).
----
-
-### Passo 2: Configurando Seu Repositório
-
-**Para cada novo Repositório em que você desejar usar o CodeWise, siga os passos abaixo.**
- 
-"*O ideal é sempre criar um ambiente virtual na pasta raiz do novo repositório para evitar conflitos das dependências.*"
+Siga os passos abaixo para instalar e configurar o **CodeWise** em qualquer repositório.
 
 ---
-#### 2.1 Crie e Utilize um Ambiente Virtual
 
-Para evitar conflitos com outros projetos Python, use um ambiente virtual (`venv`).
+### 🧩 **Passo 1 — Pré-requisitos**
 
-* **Para Criar o Ambiente:**
+Antes de começar, garanta que você tenha instaladas as seguintes ferramentas:
 
-    * Este comando cria uma pasta `.venv` com uma instalação limpa do Python. Faça isso uma única vez por repositório,
-    *Lembrando que o ".venv" é o nome da pasta que foi criada, voce pode escolher qualquer outro nome pra ela.*
- 
+1. **Python** (versão 3.11 ou superior)  
+2. **Git**  
+3. **GitHub CLI (`gh`)**
 
-(**dentro da raíz do repositório onde está a pasta .git**)
+> Após instalar a CLI do GitHub ([https://cli.github.com](https://cli.github.com)), execute:
+> ```bash
+> gh auth login
+> ```
+> Faça login na sua conta — este passo é necessário apenas uma vez por computador.
 
-    ```bash
-    # No Windows
-    py -m venv .venv
-    
-    # No Linux/WSL
-    python3 -m venv .venv
-    ```
-
-* **Para Ativar o Ambiente:**
-
-    * Sempre que for trabalhar no projeto, você precisa ativar o ambiente.
-
-    * **Dica para Windows/PowerShell:** Se o comando de ativação der um erro de política de execução, rode este comando primeiro: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
-
-    ```bash
-    # No Windows (PowerShell)
-    .\.venv\Scripts\activate
-    
-    # No Linux/WSL
-    source .venv/bin/activate
-    ```
-    *Você saberá que funcionou porque o nome `(.venv)` aparecerá no início da linha do seu terminal.*
 ---
-#### 2.2 Instale a Ferramenta CodeWise
-Com o ambiente virtual ativo, instale a biblioteca com o `pip`.
+
+### 🧱 **Passo 2 — Configurando Seu Repositório**
+
+> O ideal é sempre criar um **ambiente virtual na pasta raiz** do novo repositório para evitar conflitos de dependências.
+
+---
+
+#### 🔹 2.1 Criar e Ativar o Ambiente Virtual
+
+**Crie o ambiente virtual** (dentro da raiz do repositório onde está a pasta `.git`):
+
+```bash
+# Windows
+py -m venv .venv
+
+# Linux/WSL
+python3 -m venv .venv
+```
+
+> 💡 O nome `.venv` é apenas uma convenção — você pode usar outro nome se quiser.
+
+**Ative o ambiente:**
+
+```bash
+# Windows (PowerShell)
+.\.venv\Scripts\activate
+
+# Linux/WSL
+source .venv/bin/activate
+```
+
+> ⚠️ Se ocorrer erro de política de execução no PowerShell, rode:
+> ```bash
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+> ```
+
+Você saberá que funcionou quando o nome `(.venv)` aparecer no início da linha do terminal.
+
+---
+
+#### 🔹 2.2 Instalar a Ferramenta CodeWise
+
+Com o ambiente virtual ativo, instale o pacote:
 
 ```bash
 pip install codewise-lib
 ```
- **Pode demorar um pouco pra instalar todas as dependências na primeira vez.**
 
-
-*Após instalar a lib, você pode confirmar se está tudo certo com o comando `codewise-help`*
-
----
-
-#### 2.3 Configure a Chave da API (.env)
-Para que a IA funcione, você precisa configurar sua chave da API do Google Gemini.
-
-1.  **Na raiz do seu projeto**, crie um arquivo chamado `.env`. Você pode usar os seguintes comandos no terminal:
-
-    * **Windows**
-        ```bash
-        notepad .env
-        ```
-    * **Linux/WSL:**
-        ```bash
-        touch .env && nano .env
-        ```
-
-2.  Dentro do arquivo `.env`, cole o seguinte conteúdo, adicione sua chave e salve:
-        ```
-        GEMINI_API_KEY=SUA_CHAVE_AQUI
-        MODEL_NAME=gemini-2.0-flash
-        ```
-    ⚠️ **Importante:** Lembre-se de adicionar o arquivo `.env` ao seu `.gitignore` para não enviar sua chave secreta para o GitHub ao dar push e que ele deve ser do tipo "arquivo ENV" e não .txt ou coisa do tipo.
+> ⏳ A primeira instalação pode demorar um pouco.  
+> Após concluir, confirme se está tudo certo com:
+> ```bash
+> codewise-help
+> ```
 
 ---
 
-## Nota Importante: A ferramenta CodeWise espera que seus remotes sigam a convenção padrão do GitHub:
+#### 🔹 2.3 Configurar a Chave da API (`.env`)
 
-origin: Deve apontar para o seu fork pessoal do repositório.
+Para que a IA funcione, configure suas chaves de API e o provedor desejado.
 
-upstream: (caso você adicione ao repositório)Deve apontar para o repositório principal do qual você fez o fork.
+1. **Na raiz do projeto**, crie um arquivo `.env`:
 
-**Caso você comece um repositório novo totalmente zerado, você tem que dar um push inicial com "git push --no-verify" antes de usar a ferramenta para que o GH CLI funcione corretamente ao criar os Pull Requests**
+```bash
+# Windows
+notepad .env
 
-#### 2.4 Agora apenas uma vez > Ative a Automação no Repositório com um comando.
-Na raiz do projeto onde também está a pasta .git use:
+# Linux/WSL
+touch .env && nano .env
+```
+
+2. **Adicione o conteúdo abaixo e insira suas chaves:**
+
+```ini
+# 1. ESCOLHA O PROVEDOR DE IA
+# Opções disponíveis: "COHERE", "GROQ", "GEMINI", "OPENAI"
+AI_PROVIDER="GEMINI"  # -> maiúsculo!!!
+
+# 2. ESCOLHA O MODELO ESPECÍFICO
+# Ex.: "gemini-2.0-flash", "gpt-4o-mini"
+AI_MODEL=gemini-2.0-flash  # -> *sem* aspas
+
+# 3. COLOQUE SUA(S) CHAVE(S) DE API
+# A ferramenta usará a chave correta com base no AI_PROVIDER
+COHERE_API_KEY=sua_chave_cohere_api_aqui
+GROQ_API_KEY=sua_chave_groq_api_aqui
+GEMINI_API_KEY=sua_chave_gemini_api_aqui
+OPENAI_API_KEY=sua_chave_openai_api_aqui
+```
+
+> ⚠️ **Importante:**  
+> Adicione o arquivo `.env` ao `.gitignore` para evitar expor suas chaves secretas no GitHub.
+
+---
+
+### 🔸 **Nota Importante sobre Remotes**
+
+A ferramenta CodeWise espera que seus remotes sigam a convenção padrão do GitHub:
+
+- **origin** → aponta para o **seu fork pessoal** do repositório  
+- **upstream** → (opcional) aponta para o **repositório principal**
+
+> 🧠 Dica:  
+> Se o repositório for novo, execute um push inicial com:
+> ```bash
+> git push --no-verify
+> ```
+> Isso garante que o `gh` funcione corretamente na criação dos Pull Requests.
+
+---
+
+#### 🔹 2.4 Ativar a Automação no Repositório
+
+Na raiz do projeto (onde está a pasta `.git`), execute **uma única vez**:
 
 ```bash
 codewise-init --all
 ```
-**Use esse comando sempre que você quiser mudar para onde o PULL REQUEST SERÁ CRIADO nos hooks de pre push, pois se você adicionar um remoto upstream você tem que alternar entre qual o PR será gerado.**
 
-Aqui está a configuração do Alvo do Pull Request:
+Esse comando adicionará automaticamente os hooks `pre-commit` e `pre-push`.
 
-Se o seu repositório tiver um remote upstream configurado, o instalador fará uma pergunta depois que você usou o comando "codewise-init --all"
-para definir o comportamento padrão do hook pre-push:
+Se o seu repositório tiver um `upstream`, o instalador perguntará:
 
- Um remote 'upstream' foi detectado.
-Qual deve ser o comportamento padrão do 'git push' para este repositório?
+```
+Um remote 'upstream' foi detectado.
+Qual deve ser o comportamento padrão do 'git push'?
 1: Criar Pull Request no 'origin' (seu fork)
 2: Criar Pull Request no 'upstream' (projeto principal)
 Escolha o padrão (1 ou 2):
+```
 
-Sua escolha será salva no hook, e você não precisará mais se preocupar com isso. Se não houver upstream, ele será configurado para origin por padrão.
-
-Você verá uma mensagem de sucesso confirmando que a automação está ativa.
-
-Com esse comando os arquivos de pre-commit e pre-push já terão sido adicionados ao seu hooks do repositório.
+> Sua escolha será salva no hook — não será necessário configurá-la novamente.  
+> Se não houver `upstream`, o padrão será `origin`.
 
 ---
 
-Tudo está funcionando agora no repositório que você configurou.
-Caso queira instalar em um novo repositório basta repetir os passos.
+## 🧰 **Usando o CodeWise**
 
-# Usando o CodeWise 
-Com a configuração concluída, você já tem acesso aos comandos **codewise-lint** e **codewise-pr** de forma manual e automatizada após instalar os hooks.
+Com tudo configurado, você pode usar os comandos **`codewise-lint`** e **`codewise-pr`** manualmente ou automaticamente pelos hooks.
 
-1.  **Adicione suas alterações**
+---
 
-    * Após modificar seus arquivos, adicione-os à "staging area":
-    ```bash
-    git add .
-    ```
-    * Aqui você já pode usar o comando `codewise-lint` para analisar os arquivos e você poder fazer ajustes antes de commitar.
+### 🔸 **Fluxo de Uso**
 
-2.  **Faça o commit**
-    ```bash
-    git commit -m "implementa novo recurso "
-    ```
-    * Neste momento, o **hook `pre-commit` será ativado**, e o `codewise-lint` fará a análise rápida no seu terminal.
+#### 1️⃣ Adicione suas alterações
+```bash
+git add .
+```
+> 💡 Use `codewise-lint` antes do commit para revisar seu código.
 
-3.  **Envie para o GitHub**
-    ```bash
-    git push
-    ```
-    * Agora, o **hook `pre-push` será ativado**. O `codewise-pr` vai perguntar para qual remote você quer enviar caso haja um upstream além do seu origin em seguida irá criar um novo/atualizar seu Pull Request com título, descrição e análise técnica gerados pela IA.
+---
+
+#### 2️⃣ Faça o commit
+```bash
+git commit -m "implementa novo recurso"
+```
+> O **hook `pre-commit`** será ativado e executará o `codewise-lint` automaticamente.
+
+---
+
+#### 3️⃣ Envie para o GitHub
+```bash
+git push
+```
+> O **hook `pre-push`** ativará o `codewise-pr`, que:
+> - Perguntará para qual remote enviar (caso exista um `upstream`);
+> - Criará ou atualizará o Pull Request com **título, descrição e análise técnica** gerados pela IA.
+
+---
+
+## 🛡️ **Verificação de Privacidade e LGPD**
+
+Antes de qualquer envio de código, o `codewise-lib` realiza uma **verificação de privacidade automática**.  
+O objetivo é garantir que o provedor de IA configurado no `.env` possua políticas compatíveis com a **LGPD**, assegurando a proteção dos seus dados e da sua base de código.
+
+---
+
+### ✅ **Tudo pronto!**
+Seu repositório já está com o CodeWise ativo.  
+Para usar em outro repositório, basta repetir os passos acima.

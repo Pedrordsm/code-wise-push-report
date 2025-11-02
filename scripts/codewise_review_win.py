@@ -43,14 +43,14 @@ def run_codewise_mode(mode, repo_path, branch_name):
             # Imprime a mensagem amigável e formatada
             print("""
     ================================================================
-    ❌ ERRO: Limite de Uso da API do Google Atingido (Erro 429)
+    ❌ ERRO: Limite de Uso da API Atingido (Erro 429)
     ================================================================
     
     A sua chave de API atingiu o limite máximo de requisições
-    permitido pelo plano gratuito do Google Gemini.
+    permitido pelo plano selecionado do modelo.
     
     Isso não é um bug no CodeWise, mas uma limitação da sua conta
-    na plataforma do Google.
+    na plataforma do provedor.
         
     .  Aguarde: A cota do plano gratuito geralmente é renovada a
         cada 24 horas. Você pode tentar novamente amanhã.
