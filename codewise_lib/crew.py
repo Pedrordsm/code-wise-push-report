@@ -94,17 +94,27 @@ class Codewise:
         cfg = self.tasks_config['lgpd_judging']
         return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.task_policy_analytics())
 
+
     @crew
     def crew(self) -> Crew:
         return Crew(
             agents=[self.senior_architect(), self.senior_analytics(), self.quality_consultant(), self.quality_control_manager(),self.code_mentor()],
-            tasks=[self.task_estrutura(), self.task_heuristicas(), self.task_solid(), self.task_padroes(),self.task_mentoring(), self.task_judging()],
+            tasks=[self.task_estrutura(), self.task_heuristicas(), self.task_solid(), self.task_padroes(),self.task_mentoring()],
             process=Process.sequential
         )
-    
+
+    @crew
     def summary_crew(self) -> Crew:
         return Crew(
             agents=[self.summary_specialist()],
             tasks=[self.task_summarize()],
+            process=Process.sequential
+        )
+        
+    @crew
+    def lgpd_crew(self) -> Crew:
+        return Crew(
+            agents=[self.dataCollect_policy_analytics(), self.lgpd_judge()],
+            tasks=[self.task_policy(), self.task_judging()],
             process=Process.sequential
         )

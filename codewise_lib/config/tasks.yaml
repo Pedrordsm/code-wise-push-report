@@ -57,7 +57,7 @@ policy_analytics:
 lgpd_judging:
   description: >
     Com base nas leis LGPD e no relatório da analise da documentação,
-    determine se o provedor da api key está respeitando ou não as leis LGPD.
+    determine se o provedor da api key está respeitando ou não as leis LGPD e justifique o julgamento apontando as provas, por meio de um relatório, onde a primeira linha do arquivo é a resposta antecipada (sim ou não).
   expected_output: >
     Documento status_lgpd.md com as provas ou artigos utilizados para determinar a decisão tomada.
   agent: lgpd_judge
