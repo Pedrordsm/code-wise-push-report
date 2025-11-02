@@ -7,6 +7,10 @@ from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
 from .select_llm import create_llm
 
+from crewai_tools import (
+    WebsiteSearchTool
+)
+
 @CrewBase
 class Codewise:
     """Classe principal da crew Codewise"""
@@ -17,7 +21,10 @@ class Codewise:
         self.provider = os.getenv("AI_PROVIDER").upper()
         self.model = os.getenv("AI_MODEL")
         ##
-        self.llm = create_llm(provider,model)
+        self.llm = create_llm(self.provider,self.model)
+
+        #tools
+        self.web_search_tool = WebsiteSearchTool()
         
         base_dir = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(base_dir, "config")
@@ -47,10 +54,10 @@ class Codewise:
     def code_mentor(self) -> Agent: return Agent(config=self.agents_config['code_mentor'], llm=self.llm, verbose=False)
 
     @agent
-    def dataCollect_policy_analytics(self) -> Agent: return Agent(config=self.agents_config['dataCollect_policy_analytics'], llm=self.llm, verbose=False)
+    def dataCollect_policy_analytics(self) -> Agent: return Agent(config=self.agents_config['dataCollect_policy_analytics'], llm=self.llm, tools=[self.web_search_tool], verbose=False)
 
     @agent
-    def lgpd_judge(self) -> Agent: return Agent(config=self.agents_config['lgpd_judge'], llm=self.llm, verbose = False)
+    def lgpd_judge(self) -> Agent: return Agent(config=self.agents_config['lgpd_judge'], llm=self.llm, tools=[self.web_search_tool], verbose = False)
     
     @task
     def task_estrutura(self) -> Task:
@@ -92,7 +99,7 @@ class Codewise:
     @task
     def task_judging(self) -> Task:
         cfg = self.tasks_config['lgpd_judging']
-        return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.task_policy_analytics())
+        return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.lgpd_judge())
 
 
     @crew
@@ -103,15 +110,13 @@ class Codewise:
             process=Process.sequential
         )
 
-    @crew
     def summary_crew(self) -> Crew:
         return Crew(
             agents=[self.summary_specialist()],
             tasks=[self.task_summarize()],
             process=Process.sequential
         )
-        
-    @crew
+
     def lgpd_crew(self) -> Crew:
         return Crew(
             agents=[self.dataCollect_policy_analytics(), self.lgpd_judge()],

@@ -18,10 +18,10 @@ class CodewiseRunner:
         print(f"Verificando a política de coleta de dados do provedor com base neste modelo de api key...")
 
         #lgpd crew
-        lgpd_check = codewise_instance.lgpd_crew()
+        lgpd_check_crew = codewise_instance.lgpd_crew()
 
         # roda a analise e o julgamento lgpd (todo o time)
-        lgpd_check.kickoff()
+        lgpd_check_crew.kickoff()
 
         #definicao do caminho
         output_dir_name = "analises-julgamento-lgpd"
@@ -29,7 +29,7 @@ class CodewiseRunner:
         os.makedirs(output_dir_path, exist_ok=True)
 
         # salvando o resultado da analise da politica de coleta de dados
-        resultado_policy = lgpd_check.tasks[0].output
+        resultado_policy = lgpd_check_crew.tasks[0].output
 
         # definindo caminho e nome do arquivo final.
         policy_file_path = os.path.join(output_dir_path, "analise_politica_coleta_de_dados.md")
@@ -43,14 +43,14 @@ class CodewiseRunner:
         
         
         #salvando o julgamento lgpd
-        resultado_lgpd = lgpd_check.tasks[1].output
+        resultado_lgpd = lgpd_check_crew.tasks[1].output
 
         # definindo caminho e nome do arquivo final.
-        lgpd_judge_file_path = os.path.join(output_dit_path, "julgamento_lgpd.md")
+        lgpd_judge_file_path = os.path.join(output_dir_path, "julgamento_lgpd.md")
 
         try:
-            with open(lgpd_judge_file_path, "w", encoding="utf-8" as f):
-                f.write(str(resultado_lgpd))
+            with open(lgpd_judge_file_path, "w", encoding="utf-8") as fj:
+                fj.write(str(resultado_lgpd))
                 print(f"    - Arquivo 'julgamento_lgpd.md' salvo com sucesso em '{output_dir_path}'.", file=sys.stderr)
         except Exception as e:
             print(f"    - ERRO ao salvar o arquivo 'julgamento_lgpd.md': {e}", file=sys.stderr)
@@ -61,12 +61,21 @@ class CodewiseRunner:
         status = False
         try:
             with open("julgamento_lgpd.md", "r") as julgamento:
+                #print(julgamento.readline())
                 if(julgamento.readline() == "sim"):
                     status = True
+                    print("Provedor requisitado está respeitando as normas LGPD, podemos proseguir com a análise.")
+                    print(f"Acesse os arquivos 'analise_politica_coleta_de_dados.md.' e 'julgamento_lgpd.md' para comprovações do julgamento.")
                 else:
                     status = False
-
-
+                    print(f"Provedor requisitado não está dentro das normas LGPD! Por conta disso, as análises foram interrompidas antes que seus dados fossem enviados.")
+                    print(f"Tente novamente escolhendo outro provedor ou modelo de api key.")
+                    print(f"Para mais informações, acesse os arquivos 'analise_politica_coleta_de_dados.md.' e 'julgamento_lgpd.md'.")
+        except Exception as e:
+            print(f"    - ERRO ao ler o arquivo 'julgamento_lgpd.md': {e}", file=sys.stderr)
+        
+        print(status)
+        """
         if(status = True):
 
             print("Provedor requisitado está respeitando as normas LGPD, podemos proseguir com a análise.")
@@ -175,7 +184,7 @@ class CodewiseRunner:
             print(f"Provedor requisitado não está dentro das normas LGPD! Por conta disso, as análises foram interrompidas antes que seus dados fossem enviados.")
             print(f"Tente novamente escolhendo outro provedor ou modelo de api key.")
             print(f"Para mais informações, acesse os arquivos 'analise_politica_coleta_de_dados.md.' e 'julgamento_lgpd.md'.")
-
+        """
     def _ler_arquivo(self, file_path: str) -> str:
         try:
             with open(file_path, "r", encoding="utf-8") as f: return f.read()
