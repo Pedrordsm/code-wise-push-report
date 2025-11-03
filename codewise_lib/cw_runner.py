@@ -1,8 +1,10 @@
 import os
 import sys
+import re
 from .crew import Codewise
 from .entradagit import gerar_entrada_automatica, obter_mudancas_staged
 from crewai import Task, Crew
+
 
 class CodewiseRunner:
     def __init__(self):
@@ -16,6 +18,7 @@ class CodewiseRunner:
         codewise_instance = Codewise()
 
         print(f"Verificando a política de coleta de dados do provedor com base neste modelo de api key...")
+
         #lgpd crew
         lgpd_check_crew = codewise_instance.lgpd_crew()
 
@@ -57,19 +60,38 @@ class CodewiseRunner:
         # fim
 
         # Verificação dos resultados da política de coleta de dados do provedor e model utilizados
+        caminho = os.path.join("analises-julgamento-lgpd", "julgamento_lgpd.md")
         status = False
+        print("****************")
+        print("Arquivo existe?", os.path.exists(policy_file_path))
+        print("Arquivo existe (status)?", os.path.exists(lgpd_judge_file_path))
+        print("****************")
         try:
-            with open("julgamento_lgpd.md", "r") as julgamento:
+            with open(lgpd_judge_file_path, "r", encoding="utf-8") as julgamento:
                 #print(julgamento.readline())
-                if(julgamento.readline() == "sim"):
-                    status = True
-                    print("Provedor requisitado está respeitando as normas LGPD, podemos proseguir com a análise.")
-                    print(f"Acesse os arquivos 'analise_politica_coleta_de_dados.md.' e 'julgamento_lgpd.md' para comprovações do julgamento.")
-                else:
-                    status = False
-                    print(f"Provedor requisitado não está dentro das normas LGPD! Por conta disso, as análises foram interrompidas antes que seus dados fossem enviados.")
-                    print(f"Tente novamente escolhendo outro provedor ou modelo de api key.")
-                    print(f"Para mais informações, acesse os arquivos 'analise_politica_coleta_de_dados.md.' e 'julgamento_lgpd.md'.")
+
+                for linha in julgamento:
+                    linha_clean = linha.strip().lower()
+
+                    linha_clean = re.sub(r'[*_#>`~]', '', linha_clean).strip()
+
+                    linha_clean = linha_clean.strip()
+                    
+                    print(f"{linha_clean}")
+                    if(linha_clean == "sim"):
+                        print(f"SSSSSSSIIIMMMMMMMMMFASOKFSAOFKAOFKAOS")
+                        status = True
+                        print("Provedor requisitado está respeitando as normas LGPD, podemos proseguir com a análise.")
+                        print(f"Acesse os arquivos 'analise_politica_coleta_de_dados.md.' e 'julgamento_lgpd.md' para comprovações do julgamento.")
+                        break
+                    if (linha_clean == "não"):
+                        status = False
+                        print(f"NAAAAAAOFASOKFSAOFKAOFKAOS")
+                        print("Provedor requisitado não está dentro das normas LGPD! Por conta disso, as análises foram interrompidas antes que seus dados fossem enviados.")
+                        print(f"Tente novamente escolhendo outro provedor ou modelo de api key.")
+                        print(f"Para mais informações, acesse os arquivos 'analise_politica_coleta_de_dados.md.' e 'julgamento_lgpd.md'.")
+                        break
+                    print(f"{linha}")
         except Exception as e:
             print(f"    - ERRO ao ler o arquivo 'julgamento_lgpd.md': {e}", file=sys.stderr)
         
