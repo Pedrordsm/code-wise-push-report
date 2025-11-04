@@ -32,8 +32,8 @@ code_mentor:
 
 dataCollect_policy_analytics:
   role: Especialista em análise de políticas de coletas de dados
-  goal: Analisar documentações sobre a política de coleta de dados de modelos de api keys fornecido por um provedor para uma futura comparação com as leis LGPD.
-  backstory: Analista de segurança de dados com foco na política de coleta de dados de um modelo de api key fornecido por um determinado provedor.
+  goal: Encontrar, a partir de buscas na web, e Analisar documentações sobre a política de coleta de dados de modelos de api keys fornecido por um provedor para uma futura comparação com as leis LGPD.
+  backstory: Analista de segurança de dados com foco na política de coleta de dados de um modelo de api key fornecido por um determinado provedor e que não desiste até efetuar a análise completa.
   
 lgpd_judge:
   role: Especialista em leis LGPD
