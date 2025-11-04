@@ -37,6 +37,7 @@ summarize_analysis:
     escreva um resumo objetivo e claro descrevendo o que foi implementado no código analisado com base nas boas práticas de Pull Request.
   expected_output: >
     Um parágrafo bem estruturado com as alterações realizadas, pronto para ser usado como descrição de um Pull Request em (pt-br).
+  agent: summary_specialist
 
 mentoring_task:
   description: > 

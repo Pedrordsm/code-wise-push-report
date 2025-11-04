@@ -153,7 +153,7 @@ class CodewiseRunner:
         # roda a analise e o julgamento lgpd (todo o time)
         lgpd_check_crew.kickoff()
 
-        #definicao do caminho --> criacao directory
+        # cria directory
         os.makedirs(caminho_dir_lgpd, exist_ok=True)
 
         # salvando o resultado da analise da politica de coleta de dados
