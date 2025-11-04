@@ -5,7 +5,11 @@ import yaml
 from dotenv import load_dotenv
 from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
-from codewise_lib.create_llm import create_llm
+from .select_llm import create_llm
+
+from crewai_tools import (
+    WebsiteSearchTool
+)
 
 @CrewBase
 class Codewise:
@@ -13,8 +17,14 @@ class Codewise:
     def __init__(self, commit_message: str = ""):
         load_dotenv()
         self.commit_message = commit_message
+        # self para utilizar na task de analise da politica
+        self.provider = os.getenv("AI_PROVIDER").upper()
+        self.model = os.getenv("AI_MODEL")
+        ##
+        self.llm = create_llm(self.provider,self.model)
 
-        self.llm = create_llm() # chama a criação da llm que o usuário tiver escolhido dno .env
+        #tools
+        self.web_search_tool = WebsiteSearchTool()
         
         base_dir = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(base_dir, "config")
@@ -42,6 +52,12 @@ class Codewise:
     def summary_specialist(self) -> Agent: return Agent(config=self.agents_config['summary_specialist'], llm=self.llm, verbose=False)
     @agent
     def code_mentor(self) -> Agent: return Agent(config=self.agents_config['code_mentor'], llm=self.llm, verbose=False)
+
+    @agent
+    def dataCollect_policy_analytics(self) -> Agent: return Agent(config=self.agents_config['dataCollect_policy_analytics'], llm=self.llm, tools=[self.web_search_tool], verbose=False)
+
+    @agent
+    def lgpd_judge(self) -> Agent: return Agent(config=self.agents_config['lgpd_judge'], llm=self.llm, tools=[self.web_search_tool], verbose = False)
     
     @task
     def task_estrutura(self) -> Task:
@@ -68,6 +84,23 @@ class Codewise:
     def task_mentoring(self) -> Task:
         cfg = self.tasks_config['mentoring_task']
         return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.code_mentor())
+    
+    @task
+    def task_policy(self) -> Task:
+        cfg = self.tasks_config['policy_analytics']
+
+        formatted_description = cfg['description'].format(
+            IA_PROVIDER=self.provider,
+            IA_MODEL=self.model
+        )
+
+        return Task(description=formatted_description, expected_output=cfg['expected_output'], agent=self.dataCollect_policy_analytics())
+
+    @task
+    def task_judging(self) -> Task:
+        cfg = self.tasks_config['lgpd_judging']
+        return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.lgpd_judge())
+
 
     @crew
     def crew(self) -> Crew:
@@ -76,10 +109,17 @@ class Codewise:
             tasks=[self.task_estrutura(), self.task_heuristicas(), self.task_solid(), self.task_padroes(),self.task_mentoring()],
             process=Process.sequential
         )
-    
+
     def summary_crew(self) -> Crew:
         return Crew(
             agents=[self.summary_specialist()],
             tasks=[self.task_summarize()],
+            process=Process.sequential
+        )
+
+    def lgpd_crew(self) -> Crew:
+        return Crew(
+            agents=[self.dataCollect_policy_analytics(), self.lgpd_judge()],
+            tasks=[self.task_policy(), self.task_judging()],
             process=Process.sequential
         )

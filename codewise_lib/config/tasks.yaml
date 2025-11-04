@@ -37,6 +37,7 @@ summarize_analysis:
     escreva um resumo objetivo e claro descrevendo o que foi implementado no código analisado com base nas boas práticas de Pull Request.
   expected_output: >
     Um parágrafo bem estruturado com as alterações realizadas, pronto para ser usado como descrição de um Pull Request em (pt-br).
+  agent: summary_specialist
 
 mentoring_task:
   description: > 
@@ -45,3 +46,20 @@ mentoring_task:
   expected_output: >
     Documento sugestoes_aprendizado.md com recursos educacionais específicos (artigos, cursos, vídeos) organizados por tópico e conectados aos problemas identificados.
   agent: code_mentor
+
+policy_analytics:
+  description: >
+    Crie um relatório sobre a política de coleta de dados do "{IA_PROVIDER}" para o modelo "{IA_MODEL}"
+    com base, e apenas, na documentação oficial. Lembre-se de usar a ferramenta para buscar a documentação oficial.
+  expected_output: >
+    Relatório data_collect_policy.md com um resumo dos principais pontos REAIS sobre a política de coleta de dados do provedor a partir da documentação oficial, com as referências (links dos sites utilizados) no fim do arquivo e duas linhas logo ao inicio, reservadas informando APENAS E DIRETAMENTE o provedor e o modelo da api key, da seguinte forma: **providermodeloapikey Ex: coherecommand-a-03-2025**.
+  agent: dataCollect_policy_analytics
+
+lgpd_judging:
+  description: >
+    Com base nas leis LGPD e no relatório da analise da documentação,
+    determine se o provedor da api key está respeitando ou não as leis LGPD e justifique o julgamento apontando as provas, por meio de um relatório, onde a primeira linha **exatamente na linha 1** do arquivo é a resposta antecipada (sim ou não).
+    Lembre-se de usar a ferramenta para buscar as leis LGPD do site oficial (gov.br).
+  expected_output: >
+    Documento julgamento_lgpd.md com as provas ou artigos utilizados para determinar a decisão tomada.
+  agent: lgpd_judge

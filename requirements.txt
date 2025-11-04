@@ -1,6 +1,14 @@
 crewai
+crewai[tools]
+qdrant-client
 python-dotenv
 pyyaml
 google-generativeai
 langchain-google-genai
-langchain-openai  
+langchain-groq
+groq
+langchain-openai
+openai
+langchain-cohere
+cohere
+litellm
