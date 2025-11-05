@@ -52,7 +52,7 @@ policy_analytics:
     Crie um relatório sobre a política de coleta de dados do "{IA_PROVIDER}" para o modelo "{IA_MODEL}"
     com base, e apenas, na documentação oficial. Lembre-se de usar a ferramenta para buscar a documentação oficial.
   expected_output: >
-    Relatório data_collect_policy.md com um resumo dos principais pontos REAIS sobre a política de coleta de dados do provedor a partir da documentação oficial, com as referências (links dos sites utilizados) no fim do arquivo e duas linhas logo ao inicio, reservadas informando APENAS E DIRETAMENTE o provedor e o modelo da api key, da seguinte forma: **providermodeloapikey Ex: coherecommand-a-03-2025**.
+    Relatório analise_politica_coleta_de_dados.md com um resumo dos principais pontos REAIS sobre a política de coleta de dados do provedor a partir da documentação oficial, com as referências (links dos sites utilizados) no fim do arquivo e duas linhas logo ao inicio, reservadas informando APENAS E DIRETAMENTE o provedor e o modelo da api key, da seguinte forma: **providermodeloapikey**.
   agent: dataCollect_policy_analytics
 
 lgpd_judging:
