@@ -5,10 +5,4 @@ python-dotenv
 pyyaml
 google-generativeai
 google-genai
-langchain-groq
-groq
-langchain-openai
-openai
-langchain-cohere
-cohere
 litellm
