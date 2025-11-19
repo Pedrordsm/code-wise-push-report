@@ -10,7 +10,7 @@ def main():
         "--mode",
         type=str,
         required=True,
-        choices=['descricao', 'analise', 'titulo', 'lint'],
+        choices=['descricao', 'analise', 'titulo', 'lint', 'lgpd_verify'],
         help="Modo de operação."
     )
     args = parser.parse_args()
