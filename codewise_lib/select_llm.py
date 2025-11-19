@@ -3,51 +3,44 @@ from crewai import LLM
 import sys
 
 def create_llm(provider:str, model:str)-> LLM:
-    if provider == "GEMINI":
-        if not os.getenv("GEMINI_API_KEY"):
-            print("Erro: A variável de ambiente GEMINI_API_KEY não foi definida.")
-            sys.exit(1)
+
+    provider_conf = {
+         "GEMINI": {
+            "env_key": "GEMINI_API_KEY",
+            "model_prefix": "gemini/"
+        },
+        "OPENAI": {
+            "env_key": "OPENAI_API_KEY", 
+            "model_prefix": "openai/"
+        },
+        "GROQ": {
+            "env_key": "GROQ_API_KEY",
+            "model_prefix": "groq/"
+        },
+        "COHERE": {
+            "env_key": "COHERE_API_KEY",
+            "model_prefix": "cohere_chat/"
+        }
+    }
+
+    provider_upper = provider.upper()
+    if provider_upper not in provider_conf:
+        supported_providers = ", ".join(provider_conf.keys())
+        print(f"Erro: Provedor '{provider}' não suportado. Provedores suportados: {supported_providers}")
+        sys.exit(1)
+
+    config = provider_conf[provider_upper]
+    env_key = config["env_key"]
+    env_model = config["model_prefix"]
+
+    if not os.getenv(env_key):
+        print(f"A variável de ambiente {env_key} não foi definida.")
+    else:
         try:
             return LLM(
-                model= "gemini/" + model,
-                temperature=0.7
-            )
+                model = env_model + model,
+                temperature = 0.7)
         except Exception as e:
-            print(f"Erro ao inicializar o LLM. Verifique sua chave de API e dependências. Erro: {e}")
+            print(f"Erro ao inicializar o LLM para {provider}. Erro: {e}")
             sys.exit(1)
-    elif provider == "OPENAI":
-        if not os.getenv("OPENAI_API_KEY"):
-            print("Erro: A variável de ambiente OPENAI_API_KEY não foi definida.")
-            sys.exit(1)
-        try:
-            return LLM(
-                model= "openai/" + model,
-                temperature=0.7,
-            )
-        except Exception as e:
-            print(f"Erro ao inicializar o LLM. Verifique sua chave de API e dependências. Erro: {e}")
-            sys.exit(1)
-    elif provider == "GROQ":
-        if not os.getenv("GROQ_API_KEY"):
-            print("Erro: A variável de ambiente GROQ_API_KEY não foi definida.")
-            sys.exit(1)
-        try:
-            return LLM(
-                model= "groq/" + model,
-                temperature=0.7,
-            )
-        except Exception as e:
-            print(f"Erro ao inicializar o LLM. Verifique sua chave de API e dependências. Erro: {e}")
-            sys.exit(1)
-    elif provider == "COHERE":
-        if not os.getenv("COHERE_API_KEY"):
-            print("Erro: A variável de ambiente COHERE_API_KEY não foi definida.")
-            sys.exit(1)
-        try:
-            return LLM(
-                model= "cohere/" + model,
-                temperature=0.7,
-            )
-        except Exception as e:
-            print(f"Erro ao inicializar o LLM. Verifique sua chave de API e dependências. Erro: {e}")
-            sys.exit(1)
+    
