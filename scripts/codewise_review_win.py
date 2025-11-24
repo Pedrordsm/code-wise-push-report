@@ -133,6 +133,9 @@ def main_lint():
         current_branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], encoding='utf-8', cwd=repo_path).strip()
     except Exception:
         current_branch = ""
+
+    # Chamando função que pergunta ao usuário se ele gostaria de continuar (enviar os dados para provedor ou não)
+    lgpd_check_user_choice(repo_path, current_branch)
         
     print("--- 🔍 Executando análise rápida pré-commit do CodeWise ---", file=sys.stderr)
     sugestoes = run_codewise_mode("lint", repo_path, current_branch)
@@ -180,6 +183,9 @@ def run_pr_logic(target_selecionado, pushed_branch):
 
     upstream_existe = verificar_remote_existe('upstream', repo_path)
     upstream_renomeado = False
+
+    # Chamando função que pergunta ao usuário se ele gostaria de continuar (enviar os dados para provedor ou não)
+    lgpd_check_user_choice(repo_path, current_branch)
 
     try:
         if target_selecionado == 'origin' and upstream_existe:
@@ -372,3 +378,58 @@ def main_pr_interactive():
         sys.exit(f"❌ Erro ao detectar a branch Git atual: {e}")
 
     run_pr_logic(target_selecionado=target_selecionado, pushed_branch=current_branch)
+
+
+def lgpd_check_user_choice(repo_path:str, branch_atual:str):
+    caminho_dir_lgpd = os.path.join(repo_path, "analises-julgamento-lgpd")
+    policy_file_path = os.path.join(caminho_dir_lgpd, "analise_politica_coleta_de_dados.md")
+    lgpd_judge_file_path = os.path.join(caminho_dir_lgpd, "julgamento_lgpd.md")
+
+    run_codewise_mode("lgpd_verify", repo_path, branch_atual)    
+
+
+    if not os.path.exists(policy_file_path):
+        sys.exit("Erro: O arquivo de política de dados não existe! Execute novamente para a análise ser feita.")
+    
+    try:
+        with open(lgpd_judge_file_path, "r", encoding="utf-8") as f:
+            content_resume = f.read()
+
+            print("-" * 40)
+            print()
+            print("Resumo sobre a análise da política de uso de dados: ")
+            print("")
+            
+            # Pegar apenas a conclusao do arquivo e mostrar ao usuario no cmd
+            conclusao = re.search(r"(?i)^#+\s*Conclusão\s*\n+(.*)", content_resume, re.MULTILINE | re.DOTALL)
+
+            if(conclusao):
+                conclusao_content = conclusao.group(1).strip()
+
+            print(conclusao_content)
+            print("")
+
+            while True:
+                print("-" * 40)
+                print("\n⚠️ AVISO: Esta ação requer o envio de dados, como por exemplo, o código-fonte, para o provedor da API key fornecida.", file=sys.stderr)
+                print()
+                choice = input("* Com base na verificação apresentada acima, você gostaria de continuar com o envio de seus dados para o provedor e modelo de api key escolhido? [S/N]: ").strip().upper()
+                print()
+                if(choice == "S"):
+                    print("-" * 40)
+                    print("\nVocê ✅ AUTORIZOU ✅ o envio de dados necessários para o provedor da API key escolhida!", file=sys.stderr)
+                    print("\nContinuando as análises...")
+                    print()
+                    print("-" * 40)
+                    print()
+                    return True
+                elif(choice == "N"):
+                    print("-" * 40)
+                    print("\nVocê ❌ NÃO AUTORIZOU ❌ o envio de dados necessários para o provedor da API key escolhida. Execute novamente com outro modelo ou provedor.", file=sys.stderr)
+                    print("\nDados ❌ NÃO ENVIADOS! ❌ Interrompendo programa...", file=sys.stderr)
+                    print()
+                    print("-" * 40)
+                    sys.exit(0)
+    except Exception as e:
+        print(f"Erro em obter a autorização do usuário: {e}", file=sys.stderr)
+        sys.exit(1)
