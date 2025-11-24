@@ -1,8 +1,6 @@
-crewai
-crewai[tools]
-qdrant-client
-python-dotenv
-pyyaml
-google-generativeai
-google-genai
-litellm
+crewai==0.201.1
+crewai-tools==0.76.0
+python-dotenv==1.1.1
+PyYAML==6.0.3
+litellm==1.74.9
+qdrant-client==1.15.1
