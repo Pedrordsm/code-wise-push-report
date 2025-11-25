@@ -338,39 +338,6 @@ A arquitetura MVC facilita extensões futuras:
 4. **Interface Web**: Adicione views web sem alterar models ou controllers
 5. **API REST**: Exponha funcionalidade via API usando controllers existentes
 
-### 📊 **Sistema de Notificações (Novo)**
-
-O CodeWise agora pode enviar notificações de performance scores para gerentes através de múltiplos canais:
-
-**Configuração no `.env`:**
-```ini
-# Habilitar notificações
-NOTIFICATIONS_ENABLED=true
-
-# Destinatários de email
-NOTIFICATION_EMAIL_RECIPIENTS=manager@example.com,lead@example.com
-
-# Webhook do Slack
-NOTIFICATION_SLACK_WEBHOOK=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
-
-# Webhook genérico
-NOTIFICATION_WEBHOOK_URL=https://your-endpoint.com/scores
-
-# Configuração SMTP (para email)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
-SMTP_FROM_EMAIL=codewise@example.com
-```
-
-As notificações incluem:
-- Nome do desenvolvedor
-- Score de performance (0-10)
-- Justificativa detalhada
-- Timestamp
-
----
 
 ### ✅ **Tudo pronto!**
 Seu repositório já está com o CodeWise ativo.  
