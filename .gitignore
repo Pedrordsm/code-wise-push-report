@@ -194,3 +194,16 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# CodeWise specific
+# Analysis output directories
+analises-julgamento-lgpd/
+.codewise_cache/
+
+# Temporary files
+.entrada_temp.txt
+
+# Debug files
+DEBUG_SCORE_ISSUE.md
+
+.kiro

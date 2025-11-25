@@ -26,17 +26,29 @@ def run_codewise_mode(mode, repo_path, branch_name):
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         env['PYTHONPATH'] = f"{project_root}{os.pathsep}{env.get('PYTHONPATH', '')}"
         
-        result = subprocess.run(
-            command, 
-            check=True, 
-            capture_output=True, 
-            text=True, 
-            encoding='utf-8', 
-            errors='ignore', 
-            env=env,
-            stdin=subprocess.DEVNULL
-        )
-        return result.stdout.strip()
+        # For interactive modes (lgpd_verify), don't capture output
+        # This allows user input prompts to work
+        if mode == 'lgpd_verify':
+            result = subprocess.run(
+                command,
+                check=True,
+                text=True,
+                encoding='utf-8',
+                errors='ignore',
+                env=env
+            )
+            return ""  # No output to capture for lgpd_verify
+        else:
+            result = subprocess.run(
+                command, 
+                check=True, 
+                capture_output=True, 
+                text=True, 
+                encoding='utf-8', 
+                errors='ignore', 
+                env=env
+            )
+            return result.stdout.strip()
     except subprocess.CalledProcessError as e:
         error_output = e.stderr or ""
         if "429" in error_output and "RESOURCE_EXHAUSTED" in error_output:
@@ -57,10 +69,16 @@ def run_codewise_mode(mode, repo_path, branch_name):
   
             """, file=sys.stderr)
         else:
-            print(f"❌ FALHA Inesperada no modo '{mode}': O subprocesso falhou com o código de saída {e.returncode}", file=sys.stderr)
-            print("\n--- Saída de Erro (stderr) do Subprocesso ---", file=sys.stderr)
-            print(e.stderr if e.stderr else "Nenhuma saída de erro foi capturada.")
-            print("---------------------------------------------", file=sys.stderr)
+            # Para lgpd_verify, exit code 1 é esperado quando provider não é conforme
+            # Não mostrar erro nesse caso
+            if mode == 'lgpd_verify' and e.returncode == 1:
+                # Silenciosamente retornar None - o erro já foi mostrado pelo controller
+                return None
+            else:
+                print(f"❌ FALHA Inesperada no modo '{mode}': O subprocesso falhou com o código de saída {e.returncode}", file=sys.stderr)
+                print("\n--- Saída de Erro (stderr) do Subprocesso ---", file=sys.stderr)
+                print(e.stderr if e.stderr else "Nenhuma saída de erro foi capturada.")
+                print("---------------------------------------------", file=sys.stderr)
         return None 
 
 def obter_branch_padrao_remota(repo_path):
@@ -134,8 +152,22 @@ def main_lint():
     except Exception:
         current_branch = ""
 
-    # Chamando função que pergunta ao usuário se ele gostaria de continuar (enviar os dados para provedor ou não)
-    lgpd_check_user_choice(repo_path, current_branch)
+    # Verificar LGPD e pedir autorização do usuário
+    lgpd_dir = os.path.join(repo_path, "analises-julgamento-lgpd")
+    judge_file = os.path.join(lgpd_dir, "julgamento_lgpd.md")
+    policy_file = os.path.join(lgpd_dir, "analise_politica_coleta_de_dados.md")
+    
+    # Verificar se os arquivos LGPD existem
+    if not os.path.exists(judge_file) or not os.path.exists(policy_file):
+        # Primeira vez - criar arquivos de análise LGPD
+        print("--- [PRIMEIRA EXECUÇÃO] Verificando conformidade LGPD... ---", file=sys.stderr)
+        create_lgpd_analysis_files(repo_path, current_branch)
+    
+    # Sempre pedir autorização do usuário (primeira vez ou não)
+    print("--- [Verificando autorização do usuário] ---", file=sys.stderr)
+    if not ask_user_authorization(policy_file, judge_file):
+        print("\n[ERROR] Usuário não autorizou o envio de dados.")
+        sys.exit(1)
         
     print("--- 🔍 Executando análise rápida pré-commit do CodeWise ---", file=sys.stderr)
     sugestoes = run_codewise_mode("lint", repo_path, current_branch)
@@ -153,9 +185,15 @@ def main_lint():
     elif "Nenhum problema aparente detectado" in sugestoes_limpas:
         print("--- ✅ Nenhuma sugestão crítica. Bom trabalho! ---", file=sys.stderr)
     elif sugestoes_limpas:
-        print("\n--- 💡 SUGESTÕES DE MELHORIA ---", file=sys.stderr)
-        print(sugestoes_limpas, file=sys.stderr)
-        print("---------------------------------", file=sys.stderr)
+        # Verificar se a IA já incluiu um cabeçalho
+        if sugestoes_limpas.lower().startswith("sugestões") or "💡" in sugestoes_limpas[:50]:
+            # IA já incluiu cabeçalho, apenas mostrar
+            print(f"\n{sugestoes_limpas}", file=sys.stderr)
+        else:
+            # Adicionar cabeçalho
+            print("\n--- 💡 SUGESTÕES DE MELHORIA ---", file=sys.stderr)
+            print(sugestoes_limpas, file=sys.stderr)
+            print("---------------------------------", file=sys.stderr)
     else:
         print("--- ✅ Nenhuma sugestão crítica. Bom trabalho! ---", file=sys.stderr)
 
@@ -184,8 +222,22 @@ def run_pr_logic(target_selecionado, pushed_branch):
     upstream_existe = verificar_remote_existe('upstream', repo_path)
     upstream_renomeado = False
 
-    # Chamando função que pergunta ao usuário se ele gostaria de continuar (enviar os dados para provedor ou não)
-    lgpd_check_user_choice(repo_path, current_branch)
+    # Verificar LGPD e pedir autorização do usuário
+    lgpd_dir = os.path.join(repo_path, "analises-julgamento-lgpd")
+    judge_file = os.path.join(lgpd_dir, "julgamento_lgpd.md")
+    policy_file = os.path.join(lgpd_dir, "analise_politica_coleta_de_dados.md")
+    
+    # Verificar se os arquivos LGPD existem
+    if not os.path.exists(judge_file) or not os.path.exists(policy_file):
+        # Primeira vez - criar arquivos de análise LGPD
+        print("--- [PRIMEIRA EXECUÇÃO] Verificando conformidade LGPD... ---", file=sys.stderr)
+        create_lgpd_analysis_files(repo_path, current_branch)
+    
+    # Sempre pedir autorização do usuário (primeira vez ou não)
+    print("--- [Verificando autorização do usuário] ---", file=sys.stderr)
+    if not ask_user_authorization(policy_file, judge_file):
+        print("\n[ERROR] Usuário não autorizou o envio de dados.")
+        sys.exit(1)
 
     try:
         if target_selecionado == 'origin' and upstream_existe:
@@ -380,56 +432,120 @@ def main_pr_interactive():
     run_pr_logic(target_selecionado=target_selecionado, pushed_branch=current_branch)
 
 
-def lgpd_check_user_choice(repo_path:str, branch_atual:str):
+def ask_user_authorization(policy_file: str, judge_file: str) -> bool:
+    """
+    Mostra o resumo da política LGPD e pede autorização do usuário.
+    
+    Args:
+        policy_file: Caminho para o arquivo de análise de política
+        judge_file: Caminho para o arquivo de julgamento LGPD
+        
+    Returns:
+        True se o usuário autorizar (S), False caso contrário (N)
+    """
+    try:
+        # Ler o arquivo de política
+        with open(policy_file, "r", encoding="utf-8") as f:
+            content = f.read()
+        
+        print("-" * 40)
+        print()
+        print("Resumo sobre a análise da política de uso de dados:")
+        print()
+        
+        # Extrair a conclusão
+        conclusao_match = re.search(r"(?i)^#+\s*Conclusão\s*\n+(.*)", content, re.MULTILINE | re.DOTALL)
+        
+        if conclusao_match:
+            conclusao_content = conclusao_match.group(1).strip()
+            print(conclusao_content)
+        else:
+            print("Conclusão não encontrada no arquivo de análise.")
+        
+        print()
+        
+        # Pedir autorização
+        while True:
+            print("-" * 40)
+            print("\n⚠️ AVISO: Esta ação requer o envio de dados, como por exemplo,")
+            print("o código-fonte, para o provedor da API key fornecida.", file=sys.stderr)
+            print()
+            
+            # Ler input diretamente do terminal (funciona em hooks Git)
+            try:
+                # No Windows, usar 'CON' para ler do console
+                if sys.platform == 'win32':
+                    with open('CON', 'r') as tty:
+                        sys.stdout.write("* Com base na verificação apresentada acima, você gostaria de continuar com o envio de seus dados para o provedor e modelo de api key escolhido? [S/N]: ")
+                        sys.stdout.flush()
+                        choice = tty.readline().strip().upper()
+                else:
+                    # No Linux/Mac, usar '/dev/tty'
+                    with open('/dev/tty', 'r') as tty:
+                        sys.stdout.write("* Com base na verificação apresentada acima, você gostaria de continuar com o envio de seus dados para o provedor e modelo de api key escolhido? [S/N]: ")
+                        sys.stdout.flush()
+                        choice = tty.readline().strip().upper()
+            except Exception as e:
+                # Fallback para input() normal
+                try:
+                    choice = input("* Com base na verificação apresentada acima, você gostaria de continuar com o envio de seus dados para o provedor e modelo de api key escolhido? [S/N]: ").strip().upper()
+                except (EOFError, OSError):
+                    print(f"\nErro ao ler entrada do usuário: {e}", file=sys.stderr)
+                    return False
+            
+            print()
+            
+            if choice == "S":
+                print("-" * 40)
+                print("\nVocê ✅ AUTORIZOU ✅ o envio de dados necessários para o")
+                print("provedor da API key escolhida!", file=sys.stderr)
+                print("\nContinuando as análises...")
+                print()
+                print("-" * 40)
+                print()
+                return True
+            elif choice == "N":
+                print("-" * 40)
+                print("\nVocê ❌ NÃO AUTORIZOU ❌ o envio de dados necessários")
+                print("para o provedor da API key escolhida.", file=sys.stderr)
+                print("\nExecute novamente com outro modelo ou provedor.")
+                print()
+                print("Dados ❌ NÃO ENVIADOS! ❌ Interrompendo programa...", file=sys.stderr)
+                print()
+                print("-" * 40)
+                return False
+            else:
+                print("Por favor, digite S para Sim ou N para Não.")
+                
+    except Exception as e:
+        print(f"Erro ao ler arquivos LGPD: {e}", file=sys.stderr)
+        return False
+
+
+def create_lgpd_analysis_files(repo_path:str, branch_atual:str):
+    """
+    Cria os arquivos de análise LGPD pela primeira vez.
+    Executa a verificação LGPD através do controller MVC, mas SEM pedir autorização.
+    A autorização será pedida depois pelo main_lint.
+    """
     caminho_dir_lgpd = os.path.join(repo_path, "analises-julgamento-lgpd")
     policy_file_path = os.path.join(caminho_dir_lgpd, "analise_politica_coleta_de_dados.md")
     lgpd_judge_file_path = os.path.join(caminho_dir_lgpd, "julgamento_lgpd.md")
 
-    run_codewise_mode("lgpd_verify", repo_path, branch_atual)    
-
-
-    if not os.path.exists(policy_file_path):
-        sys.exit("Erro: O arquivo de política de dados não existe! Execute novamente para a análise ser feita.")
-    
+    # Executar verificação LGPD para criar os arquivos
+    # O controller vai pedir autorização, mas vamos ignorar isso por enquanto
     try:
-        with open(lgpd_judge_file_path, "r", encoding="utf-8") as f:
-            content_resume = f.read()
-
-            print("-" * 40)
-            print()
-            print("Resumo sobre a análise da política de uso de dados: ")
-            print("")
-            
-            # Pegar apenas a conclusao do arquivo e mostrar ao usuario no cmd
-            conclusao = re.search(r"(?i)^#+\s*Conclusão\s*\n+(.*)", content_resume, re.MULTILINE | re.DOTALL)
-
-            if(conclusao):
-                conclusao_content = conclusao.group(1).strip()
-
-            print(conclusao_content)
-            print("")
-
-            while True:
-                print("-" * 40)
-                print("\n⚠️ AVISO: Esta ação requer o envio de dados, como por exemplo, o código-fonte, para o provedor da API key fornecida.", file=sys.stderr)
-                print()
-                choice = input("* Com base na verificação apresentada acima, você gostaria de continuar com o envio de seus dados para o provedor e modelo de api key escolhido? [S/N]: ").strip().upper()
-                print()
-                if(choice == "S"):
-                    print("-" * 40)
-                    print("\nVocê ✅ AUTORIZOU ✅ o envio de dados necessários para o provedor da API key escolhida!", file=sys.stderr)
-                    print("\nContinuando as análises...")
-                    print()
-                    print("-" * 40)
-                    print()
-                    return True
-                elif(choice == "N"):
-                    print("-" * 40)
-                    print("\nVocê ❌ NÃO AUTORIZOU ❌ o envio de dados necessários para o provedor da API key escolhida. Execute novamente com outro modelo ou provedor.", file=sys.stderr)
-                    print("\nDados ❌ NÃO ENVIADOS! ❌ Interrompendo programa...", file=sys.stderr)
-                    print()
-                    print("-" * 40)
-                    sys.exit(0)
+        run_codewise_mode("lgpd_verify", repo_path, branch_atual)
+        return True
+    except subprocess.CalledProcessError as e:
+        # Se falhou, pode ser que o provider não seja conforme
+        # Verificar se os arquivos foram criados mesmo assim
+        if os.path.exists(policy_file_path) and os.path.exists(lgpd_judge_file_path):
+            return True
+        else:
+            print("\n[ERROR] LGPD verification failed.")
+            print("Please check your provider configuration.")
+            sys.exit(1)
     except Exception as e:
-        print(f"Erro em obter a autorização do usuário: {e}", file=sys.stderr)
+        print(f"Erro ao criar arquivos LGPD: {e}", file=sys.stderr)
         sys.exit(1)

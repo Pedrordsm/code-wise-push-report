@@ -212,6 +212,178 @@ O objetivo é garantir que o provedor de IA configurado no `.env` possua políti
 
 ---
 
+## 🏗️ **Arquitetura do Sistema**
+
+O CodeWise segue o padrão **MVC (Model-View-Controller)** para garantir separação de responsabilidades, manutenibilidade e extensibilidade.
+
+### 📐 **Visão Geral da Arquitetura**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Entry Point                          │
+│                    (main.py - CLI)                          │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Controller Layer                         │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  CodewiseController                                   │  │
+│  │  - Roteamento de comandos                            │  │
+│  │  - Orquestração de workflows                         │  │
+│  └──────────────────────────────────────────────────────┘  │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Model Layer                            │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  GitService          │  LLMFactory                   │  │
+│  │  - Operações Git     │  - Criação de provedores IA   │  │
+│  ├──────────────────────┼───────────────────────────────┤  │
+│  │  CrewOrchestrator    │  LGPDService                  │  │
+│  │  - Gerencia agentes  │  - Verificação de privacidade │  │
+│  ├──────────────────────┼───────────────────────────────┤  │
+│  │  AnalysisModels      │  NotificationService          │  │
+│  │  - Estruturas dados  │  - Notificações de scores     │  │
+│  └──────────────────────────────────────────────────────┘  │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                       View Layer                            │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  OutputFormatter     │  FileWriter                   │  │
+│  │  - Formatação        │  - Operações de arquivo       │  │
+│  ├──────────────────────┼───────────────────────────────┤  │
+│  │  ConsoleView         │  NotificationFormatter        │  │
+│  │  - Saída terminal    │  - Formatação notificações    │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 📁 **Estrutura de Diretórios**
+
+```
+codewise_lib/
+├── __init__.py
+├── main.py                          # Ponto de entrada
+├── controllers/
+│   ├── __init__.py
+│   └── codewise_controller.py       # Controlador principal
+├── models/
+│   ├── __init__.py
+│   ├── exceptions.py                # Hierarquia de exceções
+│   ├── analysis_models.py           # Estruturas de dados
+│   ├── git_service.py               # Operações Git
+│   ├── llm_factory.py               # Factory de provedores IA
+│   ├── crew_orchestrator.py         # Orquestração de agentes
+│   ├── lgpd_service.py              # Verificação LGPD
+│   └── notification_service.py      # Serviço de notificações
+├── views/
+│   ├── __init__.py
+│   ├── output_formatter.py          # Formatação de resultados
+│   ├── file_writer.py               # Escrita de arquivos
+│   ├── console_view.py              # Saída no console
+│   └── notification_formatter.py    # Formatação de notificações
+├── config/
+│   ├── agents.yaml                  # Configuração de agentes
+│   └── tasks.yaml                   # Configuração de tarefas
+└── tools/
+    ├── __init__.py
+    ├── custom_git_tools.py          # Ferramentas Git customizadas
+    └── score_tool.py                # Ferramenta de pontuação
+```
+
+### 🔧 **Componentes Principais**
+
+#### **Model Layer (Camada de Modelo)**
+- **GitService**: Encapsula todas as operações Git (fetch, diff, log, blame)
+- **LLMFactory**: Padrão Factory para criar instâncias de provedores IA
+- **CrewOrchestrator**: Gerencia crews de agentes IA e execução de tarefas
+- **LGPDService**: Verifica conformidade LGPD com cache de resultados
+- **NotificationService**: Envia notificações de performance via email/Slack/webhooks
+- **AnalysisModels**: Estruturas de dados (AnalysisResult, PerformanceScore, etc.)
+
+#### **View Layer (Camada de Visualização)**
+- **OutputFormatter**: Formata resultados de análise como markdown
+- **FileWriter**: Gerencia operações de I/O de arquivos com tratamento de erros
+- **ConsoleView**: Gerencia saída no terminal com cores e formatação
+- **NotificationFormatter**: Formata notificações para diferentes canais
+
+#### **Controller Layer (Camada de Controle)**
+- **CodewiseController**: Orquestra todas as operações, roteia comandos e coordena Models e Views
+
+### 🎯 **Tratamento de Erros**
+
+O sistema implementa uma hierarquia de exceções customizadas:
+
+- `CodewiseError`: Exceção base para todos os erros
+- `GitOperationError`: Erros em operações Git
+- `ConfigurationError`: Erros de configuração
+- `FileOperationError`: Erros em operações de arquivo
+- `ValidationError`: Erros de validação de entrada
+- `LGPDComplianceError`: Erros de conformidade LGPD
+- `NotificationError`: Erros em entrega de notificações
+
+Todas as exceções incluem informações contextuais detalhadas para facilitar a depuração.
+
+### 🔌 **Extensibilidade**
+
+A arquitetura MVC facilita extensões futuras:
+
+1. **Novos Provedores IA**: Adicione ao `LLMFactory`
+2. **Novos Formatos de Saída**: Estenda `OutputFormatter`
+3. **Novos Canais de Notificação**: Estenda `NotificationService`
+4. **Interface Web**: Adicione views web sem alterar models ou controllers
+5. **API REST**: Exponha funcionalidade via API usando controllers existentes
+
+### 📊 **Sistema de Notificações (Novo)**
+
+O CodeWise agora pode enviar notificações de performance scores para gerentes através de múltiplos canais:
+
+**Configuração no `.env`:**
+```ini
+# Habilitar notificações
+NOTIFICATIONS_ENABLED=true
+
+# Destinatários de email
+NOTIFICATION_EMAIL_RECIPIENTS=manager@example.com,lead@example.com
+
+# Webhook do Slack
+NOTIFICATION_SLACK_WEBHOOK=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+
+# Webhook genérico
+NOTIFICATION_WEBHOOK_URL=https://your-endpoint.com/scores
+
+# Configuração SMTP (para email)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+SMTP_FROM_EMAIL=codewise@example.com
+```
+
+As notificações incluem:
+- Nome do desenvolvedor
+- Score de performance (0-10)
+- Justificativa detalhada
+- Timestamp
+
+---
+
 ### ✅ **Tudo pronto!**
 Seu repositório já está com o CodeWise ativo.  
 Para usar em outro repositório, basta repetir os passos acima.
+
+---
+
+## 🤝 **Contribuindo**
+
+Contribuições são bem-vindas! A arquitetura MVC facilita a adição de novos recursos:
+
+1. **Models**: Adicione nova lógica de negócio em `models/`
+2. **Views**: Adicione novos formatadores em `views/`
+3. **Controllers**: Estenda o `CodewiseController` para novos modos
+
+Consulte a documentação inline (docstrings no estilo Google) para detalhes de implementação.
