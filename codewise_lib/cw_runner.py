@@ -17,17 +17,18 @@ class CodewiseRunner:
         policy_file_path = os.path.join(caminho_dir_lgpd, "analise_politica_coleta_de_dados.md")
         lgpd_judge_file_path = os.path.join(caminho_dir_lgpd, "julgamento_lgpd.md")
 
-        status = False
-
-        if(self.verifica_se_existe_analise_lgpd(policy_file_path, lgpd_judge_file_path)):
-            print("Verificando o julgamento da análise existente...")
-            status = self.verify_result_judgement(lgpd_judge_file_path)
-        else:
-            print("Iniciando análise e julgamento LGPD...")
-            status = self.verify_lgpd(caminho_repo, caminho_dir_lgpd, policy_file_path, lgpd_judge_file_path)
-
         if(modo == 'lgpd_verify'):
+            if(self.verifica_se_existe_analise_lgpd(policy_file_path, lgpd_judge_file_path)):
+                print("\nA análise e verificação LGPD já foi feita anteriormente para este mesmo provedor e modelo api key. Por conta disso, não será necessário efetuá-la novamente! \n",file=sys.stderr)
+                print("Verificando o julgamento da análise existente...\n" ,file=sys.stderr)
+                self.verify_result_judgement(lgpd_judge_file_path)
+            else:
+                print("Iniciando análise e julgamento LGPD...",file=sys.stderr)
+                self.verify_lgpd(caminho_repo, caminho_dir_lgpd, policy_file_path, lgpd_judge_file_path)
             return 0
+
+        #if(modo == 'lgpd_verify'):
+        #    return 0
             
         contexto_para_ia = ""
 
@@ -35,7 +36,7 @@ class CodewiseRunner:
             resultado_git = obter_mudancas_staged(caminho_repo)
             
             if resultado_git is None:
-                print("Nenhum problema aparente detectado.")
+                print("Nenhum problema aparente detectado.",file=sys.stderr)
                 sys.exit(0)
             
             if resultado_git.startswith("AVISO:") or resultado_git.startswith("FALHA:"):
@@ -221,7 +222,6 @@ class CodewiseRunner:
 
                         linha_clean = linha_clean.strip()
                         if(linha_clean == provider_model):
-                            print("A análise e verificação LGPD já foi feita anteriormente para este mesmo provedor e modelo api key. Por conta disso, não será necessário efetuá-la novamente!")
                             return True
                         if(not linha):
                             return False
