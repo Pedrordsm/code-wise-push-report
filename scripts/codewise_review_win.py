@@ -36,6 +36,10 @@ def run_codewise_mode(mode, repo_path, branch_name):
             env=env,
             stdin=subprocess.DEVNULL
         )
+
+        #if result.stderr:
+        #    print(result.stderr, file=sys.stderr)
+
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
         error_output = e.stderr or ""
@@ -166,7 +170,6 @@ def main_lint():
 def run_pr_logic(target_selecionado, pushed_branch):
     """Função principal que contém toda a lógica de criação de PR."""
 
-
     current_branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], text=True).strip()
 
     if current_branch != pushed_branch:
@@ -180,6 +183,9 @@ def run_pr_logic(target_selecionado, pushed_branch):
 
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     repo_path = os.getcwd()
+
+    # Chamando função que pergunta ao usuário se ele gostaria de continuar (enviar os dados para provedor ou não)
+    lgpd_check_user_choice(repo_path, current_branch)
 
     upstream_existe = verificar_remote_existe('upstream', repo_path)
     upstream_renomeado = False
@@ -413,7 +419,26 @@ def lgpd_check_user_choice(repo_path:str, branch_atual:str):
                 print("-" * 40)
                 print("\n⚠️ AVISO: Esta ação requer o envio de dados, como por exemplo, o código-fonte, para o provedor da API key fornecida.", file=sys.stderr)
                 print()
-                choice = input("* Com base na verificação apresentada acima, você gostaria de continuar com o envio de seus dados para o provedor e modelo de api key escolhido? [S/N]: ").strip().upper()
+
+                # Trecho utilizando biblioteca para receber o input direto do SO!
+                try:
+                    # Se estiver no Windows (seu caso)
+                    if sys.platform == 'win32':
+                        import msvcrt
+                        
+                        print("\nCom base na verificação apresentada acima, você gostaria de continuar com o envio de seus dados para o provedor e modelo de api key escolhido? [S/N]:")
+                        char = msvcrt.getwche()
+                        choice = char.upper()
+                        print()
+                    
+                    # Se estiver no Linux/Mac (Fallback para compatibilidade)
+                    else:
+                        with open("/dev/tty", "r") as tty:
+                            choice = tty.readline().strip().upper()
+                except Exception:
+                    choice = input().strip().upper()
+
+                #choice = input("* Com base na verificação apresentada acima, você gostaria de continuar com o envio de seus dados para o provedor e modelo de api key escolhido? [S/N]: ").strip().upper()
                 print()
                 if(choice == "S"):
                     print("-" * 40)

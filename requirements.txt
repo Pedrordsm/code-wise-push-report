@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.0
 aiosignal==1.4.0
@@ -203,3 +204,11 @@ yarl==1.22.0
 youtube-transcript-api==1.2.3
 zipp==3.23.0
 zstandard==0.25.0
+=======
+crewai==0.201.1
+crewai-tools==0.76.0
+python-dotenv==1.1.1
+PyYAML==6.0.3
+litellm==1.74.9
+qdrant-client==1.15.1
+>>>>>>> main

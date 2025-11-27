@@ -1,6 +1,5 @@
-import argparse
-# CORREÇÃO: Adicionado o '.' para indicar uma importação relativa dentro do pacote.
 from .cw_runner import CodewiseRunner
+import argparse
 
 def main():
     parser = argparse.ArgumentParser(description="Code Wise - Ferramenta de Análise de Código com IA.")
@@ -14,7 +13,7 @@ def main():
         help="Modo de operação."
     )
     args = parser.parse_args()
-    
+
     runner = CodewiseRunner()
     runner.executar(
         caminho_repo=args.repo,

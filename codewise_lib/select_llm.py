@@ -45,7 +45,7 @@ def create_llm(provider:str, model:str)-> LLM:
             sys.exit(1)
         try:
             return LLM(
-                model= "cohere/" + model,
+                model= "cohere_chat/" + model,
                 temperature=0.7,
             )
         except Exception as e:
