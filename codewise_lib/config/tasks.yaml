@@ -66,7 +66,7 @@ lgpd_judging:
 
 code_review_scoring:
   description: >
-    Analise as mudanças de código do desenvolvedor com base nos dados fornecidos: "{git_analysis_data}".
+    Com base nas mudanças de código fornecidas: "{input}",
     
     Avalie criteriosamente os seguintes aspectos:
     1. Qualidade do Código (0-2.5 pontos): Legibilidade, clareza, nomenclatura, organização
@@ -81,13 +81,15 @@ code_review_scoring:
     - Code smells e anti-patterns
     - Eficiência e otimização
     
-    Seja rigoroso mas justo. Uma nota 10 deve ser excepcional, não comum.
-    Notas entre 7-8.5 são boas, 8.5-9.5 são muito boas, 9.5-10 são excepcionais.
-    Abaixo de 7 indica necessidade de melhorias significativas.
+    Seja rigoroso mas justo. Uma nota 10.0 deve ser excepcional, não comum.
+    Notas entre 7.0-8.5 são boas, 8.5-9.5 são muito boas, 9.5-10.0 são excepcionais.
+    Abaixo de 7.0 indica necessidade de melhorias significativas.
+    
+    A resposta deve ser **obrigatoriamente em Português do Brasil**.
   expected_output: >
-    Documento avaliacao_codigo_{author_email}.md contendo:
+    Relatório de avaliação em markdown contendo:
     - Nome do desenvolvedor e email
-    - Nota final (0-10)
+    - Nota final (0-10.0)
     - Breakdown de pontos por categoria
     - Justificativa detalhada e técnica para a nota
     - Pontos fortes identificados
