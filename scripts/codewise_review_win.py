@@ -190,6 +190,9 @@ def run_pr_logic(target_selecionado, pushed_branch):
     upstream_existe = verificar_remote_existe('upstream', repo_path)
     upstream_renomeado = False
 
+    # Chamando função que pergunta ao usuário se ele gostaria de continuar (enviar os dados para provedor ou não)
+    lgpd_check_user_choice(repo_path, current_branch)
+
     try:
         if target_selecionado == 'origin' and upstream_existe:
             print("Renomeando 'upstream' temporariamente para evitar bug do gh...", file=sys.stderr)
