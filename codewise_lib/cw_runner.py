@@ -5,11 +5,7 @@ from .crew import Codewise
 from .entradagit import gerar_entrada_automatica, obter_mudancas_staged
 from crewai import Task, Crew
 from .lgpd import *
-<<<<<<< HEAD
-from .code_reviewer import CodeReviewerCrew
-=======
 from .code_reviewer import coletar_dados_git
->>>>>>> branchtemp
 
 
 class CodewiseRunner:

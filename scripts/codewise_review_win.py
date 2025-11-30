@@ -37,8 +37,8 @@ def run_codewise_mode(mode, repo_path, branch_name):
             stdin=subprocess.DEVNULL
         )
 
-        #if result.stderr:
-        #    print(result.stderr, file=sys.stderr)
+        if result.stderr:
+            print(result.stderr, file=sys.stderr)
 
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
