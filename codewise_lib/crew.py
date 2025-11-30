@@ -11,6 +11,8 @@ from crewai_tools import (
     WebsiteSearchTool
 )
 
+from .tools.git_analysis_tool import GitAnalysisTool, GitBlameAnalysisTool
+
 @CrewBase
 class Codewise:
     """Classe principal da crew Codewise"""
@@ -25,6 +27,8 @@ class Codewise:
 
         #tools
         self.web_search_tool = WebsiteSearchTool()
+        self.git_analysis_tool = GitAnalysisTool()
+        self.git_blame_tool = GitBlameAnalysisTool()
         
         base_dir = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(base_dir, "config")
@@ -58,6 +62,9 @@ class Codewise:
 
     @agent
     def lgpd_judge(self) -> Agent: return Agent(config=self.agents_config['lgpd_judge'], llm=self.llm, tools=[self.web_search_tool], verbose = False)
+    
+    @agent
+    def code_reviewer(self) -> Agent: return Agent(config=self.agents_config['code_reviewer'], llm=self.llm, verbose=True)
     
     @task
     def task_estrutura(self) -> Task:

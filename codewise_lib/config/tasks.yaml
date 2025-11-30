@@ -63,3 +63,34 @@ lgpd_judging:
   expected_output: >
     Documento julgamento_lgpd.md com as provas ou artigos utilizados para determinar a decisão tomada.
   agent: lgpd_judge
+
+code_review_scoring:
+  description: >
+    Analise as mudanças de código do desenvolvedor com base nos dados fornecidos: "{git_analysis_data}".
+    
+    Avalie criteriosamente os seguintes aspectos:
+    1. Qualidade do Código (0-2.5 pontos): Legibilidade, clareza, nomenclatura, organização
+    2. Arquitetura e Design (0-2.5 pontos): Aderência a SOLID, padrões de projeto, separação de responsabilidades
+    3. Boas Práticas (0-2.5 pontos): Tratamento de erros, segurança, performance, testes
+    4. Impacto e Complexidade (0-2.5 pontos): Tamanho da mudança, complexidade ciclomática, risco de bugs
+    
+    Considere também:
+    - Consistência com o código existente
+    - Documentação e comentários quando necessários
+    - Potenciais problemas de manutenibilidade
+    - Code smells e anti-patterns
+    - Eficiência e otimização
+    
+    Seja rigoroso mas justo. Uma nota 10 deve ser excepcional, não comum.
+    Notas entre 7-8.5 são boas, 8.5-9.5 são muito boas, 9.5-10 são excepcionais.
+    Abaixo de 7 indica necessidade de melhorias significativas.
+  expected_output: >
+    Documento avaliacao_codigo_{author_email}.md contendo:
+    - Nome do desenvolvedor e email
+    - Nota final (0-10)
+    - Breakdown de pontos por categoria
+    - Justificativa detalhada e técnica para a nota
+    - Pontos fortes identificados
+    - Pontos de melhoria com exemplos específicos
+    - Recomendações práticas e acionáveis
+  agent: code_reviewer

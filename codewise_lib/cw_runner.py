@@ -4,6 +4,7 @@ import re
 from .crew import Codewise
 from .entradagit import gerar_entrada_automatica, obter_mudancas_staged
 from crewai import Task, Crew
+from .code_reviewer import CodeReviewerCrew
 
 
 class CodewiseRunner:
@@ -27,8 +28,7 @@ class CodewiseRunner:
                 self.verify_lgpd(caminho_repo, caminho_dir_lgpd, policy_file_path, lgpd_judge_file_path)
             return 0
 
-        #if(modo == 'lgpd_verify'):
-        #    return 0
+
             
         contexto_para_ia = ""
 
@@ -118,6 +118,35 @@ class CodewiseRunner:
                     print(f"   - Arquivo 'sugestoes_aprendizado.md' salvo com sucesso em '{output_dir_path}'.", file=sys.stderr)
             except Exception as e:
                 print(f"   - ERRO ao salvar o arquivo 'sugestoes_aprendizado.md': {e}", file=sys.stderr)
+            
+            # Executa Code Review automaticamente após a análise
+            print("\n🔍 Gerando avaliação de código...", file=sys.stderr)
+            try:
+                import subprocess
+                try:
+                    result = subprocess.run(
+                        ['git', '-C', caminho_repo, 'config', 'user.email'],
+                        capture_output=True,
+                        text=True,
+                        check=True
+                    )
+                    user_email = result.stdout.strip()
+                except:
+                    user_email = None
+                
+                reviewer = CodeReviewerCrew(
+                    repo_path=caminho_repo,
+                    author_email=user_email,
+                    commits_limit=3
+                )
+                
+                output_file = reviewer.run_review(output_dir=output_dir_path)
+                
+                if output_file:
+                    print(f"   - Arquivo de avaliação salvo: {os.path.basename(output_file)}", file=sys.stderr)
+                    
+            except Exception as e:
+                print(f"   - Aviso: Não foi possível gerar avaliação de código: {str(e)}", file=sys.stderr)
                 
         elif modo == 'lint':
             agent = codewise_instance.quality_consultant()
