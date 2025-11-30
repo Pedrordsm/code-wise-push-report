@@ -5,7 +5,11 @@ from .crew import Codewise
 from .entradagit import gerar_entrada_automatica, obter_mudancas_staged
 from crewai import Task, Crew
 from .lgpd import *
+<<<<<<< HEAD
 from .code_reviewer import CodeReviewerCrew
+=======
+from .code_reviewer import coletar_dados_git
+>>>>>>> branchtemp
 
 
 class CodewiseRunner:
@@ -120,31 +124,29 @@ class CodewiseRunner:
             except Exception as e:
                 print(f"   - ERRO ao salvar o arquivo 'sugestoes_aprendizado.md': {e}", file=sys.stderr)
             
-            # Executa Code Review automaticamente após a análise
+            # Executa Code Review automaticamente após a análise (similar ao LGPD)
             print("\n🔍 Gerando avaliação de código...", file=sys.stderr)
             try:
-                import subprocess
-                try:
-                    result = subprocess.run(
-                        ['git', '-C', caminho_repo, 'config', 'user.email'],
-                        capture_output=True,
-                        text=True,
-                        check=True
-                    )
-                    user_email = result.stdout.strip()
-                except:
-                    user_email = None
+                # Coleta dados Git
+                dados_git = coletar_dados_git(caminho_repo, commits_limit=3)
                 
-                reviewer = CodeReviewerCrew(
-                    repo_path=caminho_repo,
-                    author_email=user_email,
-                    commits_limit=3
-                )
-                
-                output_file = reviewer.run_review(output_dir=output_dir_path)
-                
-                if output_file:
-                    print(f"   - Arquivo de avaliação salvo: {os.path.basename(output_file)}", file=sys.stderr)
+                if "Erro" not in dados_git:
+                    # Cria crew de code review
+                    code_review_crew = codewise_instance.code_review_crew()
+                    
+                    # Executa a avaliação
+                    code_review_crew.kickoff(inputs={'input': dados_git})
+                    
+                    # Salva o resultado
+                    resultado_review = code_review_crew.tasks[0].output
+                    review_file_path = os.path.join(output_dir_path, "avaliacao_codigo.md")
+                    
+                    with open(review_file_path, "w", encoding="utf-8") as f:
+                        f.write(str(resultado_review))
+                    
+                    print(f"   - Arquivo 'avaliacao_codigo.md' salvo com sucesso.", file=sys.stderr)
+                else:
+                    print(f"   - Aviso: {dados_git}", file=sys.stderr)
                     
             except Exception as e:
                 print(f"   - Aviso: Não foi possível gerar avaliação de código: {str(e)}", file=sys.stderr)

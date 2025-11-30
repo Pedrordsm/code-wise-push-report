@@ -107,6 +107,11 @@ class Codewise:
     def task_judging(self) -> Task:
         cfg = self.tasks_config['lgpd_judging']
         return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.lgpd_judge())
+    
+    @task
+    def task_code_review(self) -> Task:
+        cfg = self.tasks_config['code_review_scoring']
+        return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.code_reviewer())
 
 
     @crew
@@ -128,5 +133,12 @@ class Codewise:
         return Crew(
             agents=[self.dataCollect_policy_analytics(), self.lgpd_judge()],
             tasks=[self.task_policy(), self.task_judging()],
+            process=Process.sequential
+        )
+    
+    def code_review_crew(self) -> Crew:
+        return Crew(
+            agents=[self.code_reviewer()],
+            tasks=[self.task_code_review()],
             process=Process.sequential
         )
