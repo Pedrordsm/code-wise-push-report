@@ -31,7 +31,6 @@ class CodewiseRunner:
             return 0
 
 
-            
         contexto_para_ia = ""
 
         if modo == 'lint':
@@ -142,8 +141,7 @@ class CodewiseRunner:
                         f.write(str(resultado_review))
                     
                     print(f"   - Arquivo 'avaliacao_codigo.md' salvo com sucesso.", file=sys.stderr)
-                    
-                    # Envia para Firebase e notifica gestor via Telegram
+                    # Envia notificação para o gestor
                     try:
                         import subprocess
                         email_dev = subprocess.check_output(

@@ -91,7 +91,7 @@ code_review_scoring:
     - Nome do desenvolvedor e email
     - Nota final (0-10.0)
     - Breakdown de pontos por categoria
-    - Justificativa detalhada e técnica para a nota
+    - **Justificativa Detalhada** e técnica para a nota
     - Pontos fortes identificados
     - Pontos de melhoria com exemplos específicos
     - Recomendações práticas e acionáveis

@@ -41,19 +41,19 @@ def enviar_telegram(mensagem: str) -> bool:
 
 def processar_avaliacao_e_notificar(caminho_arquivo: str, email_dev: str, repo_path: str) -> bool:
     try:
-        # Lê o arquivo linha por linha (padrão lgpd.py)
+        # Lê o arquivo linha por linha
         nota = 0.0
         justificativa_linhas = []
         capturando_breakdown = False
         
         with open(caminho_arquivo, 'r', encoding='utf-8') as f:
             for linha in f:
-                # Limpa a linha (padrão lgpd.py)
+                # Limpa a linha
                 linha_clean = linha.strip()
                 
                 # Procura pela nota
                 if 'nota final' in linha_clean.lower():
-                    # Remove caracteres especiais (padrão lgpd.py)
+                    # Remove caracteres especiais
                     linha_limpa = re.sub(r'[*_#>`~]', '', linha_clean)
                     linha_limpa = linha_limpa.strip()
                     
@@ -68,13 +68,13 @@ def processar_avaliacao_e_notificar(caminho_arquivo: str, email_dev: str, repo_p
                     capturando_breakdown = True
                     continue
                 
-                # Para de capturar quando encontrar "Justificativa Detalhada"
+                # Para de capturar quando encontrar "Justificativa detalhada"
                 if capturando_breakdown and 'justificativa detalhada' in linha_clean.lower():
                     break
                 
-                # Captura linhas do breakdown até "Justificativa Detalhada"
+                # Captura linhas do breakdown até "Justificativa"
                 if capturando_breakdown:
-                    # Remove caracteres especiais (padrão lgpd.py)
+                    # Remove caracteres especiais
                     linha_limpa = re.sub(r'[*_#>`~]', '', linha_clean)
                     linha_limpa = linha_limpa.strip()
                     
