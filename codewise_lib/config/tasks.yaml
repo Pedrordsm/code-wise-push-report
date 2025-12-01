@@ -73,7 +73,7 @@ code_review_scoring:
     2. Arquitetura e Design (0-2.5 pontos): Aderência a SOLID, padrões de projeto, separação de responsabilidades
     3. Boas Práticas (0-2.5 pontos): Tratamento de erros, segurança, performance, testes
     4. Impacto e Complexidade (0-2.5 pontos): Tamanho da mudança, complexidade ciclomática, risco de bugs
-    
+     
     Considere também:
     - Consistência com o código existente
     - Documentação e comentários quando necessários

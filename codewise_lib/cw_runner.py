@@ -6,6 +6,7 @@ from .entradagit import gerar_entrada_automatica, obter_mudancas_staged
 from crewai import Task, Crew
 from .lgpd import *
 from .code_reviewer import coletar_dados_git
+from .notificacao_gestor import processar_avaliacao_e_notificar
 
 
 class CodewiseRunner:
@@ -141,6 +142,20 @@ class CodewiseRunner:
                         f.write(str(resultado_review))
                     
                     print(f"   - Arquivo 'avaliacao_codigo.md' salvo com sucesso.", file=sys.stderr)
+                    
+                    # Envia para Firebase e notifica gestor via Telegram
+                    try:
+                        import subprocess
+                        email_dev = subprocess.check_output(
+                            ['git', '-C', caminho_repo, 'config', 'user.email'],
+                            text=True
+                        ).strip()
+                    except:
+                        email_dev = "desconhecido"
+                    
+                    print("\n📤 Enviando avaliação para o gestor...", file=sys.stderr)
+                    processar_avaliacao_e_notificar(review_file_path, email_dev, caminho_repo)
+                    
                 else:
                     print(f"   - Aviso: {dados_git}", file=sys.stderr)
                     

@@ -4,3 +4,4 @@ python-dotenv==1.1.1
 PyYAML==6.0.3
 litellm==1.74.9
 qdrant-client==1.15.1
+requests==2.31.0
