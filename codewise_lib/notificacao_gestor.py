@@ -69,7 +69,7 @@ def processar_avaliacao_e_notificar(caminho_arquivo: str, email_dev: str, repo_p
                     continue
                 
                 # Para de capturar quando encontrar "Justificativa detalhada"
-                if capturando_breakdown and 'justificativa detalhada' in linha_clean.lower():
+                if capturando_breakdown and 'fim justificativa' in linha_clean.lower():
                     break
                 
                 # Captura linhas do breakdown até "Justificativa"

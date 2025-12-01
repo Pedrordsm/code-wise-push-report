@@ -86,6 +86,9 @@ code_review_scoring:
     Abaixo de 7.0 indica necessidade de melhorias significativas.
     
     A resposta deve ser **obrigatoriamente em Português do Brasil**.
+
+    No tópico Justificativa Detalhada, informe o fim do mesmo em uma linha única após todo seu conteúdo (Fim Justificativa Detalhada). 
+
   expected_output: >
     Relatório de avaliação em markdown contendo:
     - Nome do desenvolvedor e email
