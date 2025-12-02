@@ -71,7 +71,7 @@ class Codewise:
     def lgpd_judge(self) -> Agent: return Agent(config=self.agents_config['lgpd_judge'], llm=self.llm, tools=[self.web_search_tool], verbose = False)
     
     @agent
-    def code_reviewer(self) -> Agent: return Agent(config=self.agents_config['code_reviewer'], llm=self.llm, verbose=True)
+    def code_reviewer(self) -> Agent: return Agent(config=self.agents_config['code_reviewer'], llm=self.llm, verbose=False)
     
     #definição das tarefas disponíveis para cada agente
     @task
@@ -114,7 +114,7 @@ class Codewise:
     @task
     def task_judging(self) -> Task:
         cfg = self.tasks_config['lgpd_judging']
-        return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.lgpd_judge())
+        return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.lgpd_judge(), context=[self.task_policy()])
     
     @task
     def task_code_review(self) -> Task:
