@@ -479,7 +479,7 @@ def lgpd_check_user_choice(repo_path:str, branch_atual:str):
             print("")
             
             # Pegar apenas a conclusao do arquivo e mostrar ao usuario no cmd
-            conclusao = re.search(r"(?i)^#+\s*Conclusão\s*\n+(.*)", content_resume, re.MULTILINE | re.DOTALL)
+            conclusao = re.search(r"(?i)^#+\s*Conclusão\s*\n+(.*?)\s*fim referência", content_resume, re.MULTILINE | re.DOTALL)
 
             if(conclusao):
                 conclusao_content = conclusao.group(1).strip()
