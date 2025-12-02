@@ -4,7 +4,18 @@ import re
 from dotenv import load_dotenv
 from .crew import Codewise
 
-def verify_lgpd(caminho_dir_lgpd: str, policy_file_path: str, lgpd_judge_file_path: str):
+def verify_lgpd(caminho_dir_lgpd: str, policy_file_path: str, lgpd_judge_file_path: str) -> bool:
+    """
+    Executa a verificação de conformidade LGPD do provedor de IA definido no .env.
+    
+    Args:
+        caminho_dir_lgpd: Diretório para salvar as análises LGPD
+        policy_file_path: Caminho do arquivo de análise de política
+        lgpd_judge_file_path: Caminho do arquivo de julgamento LGPD
+        
+    Returns:
+        bool: True se aprovado, False caso contrário
+    """
     # Tentativa de colocar a analise lgpd para rodar antes do envio dos dados sensiveis
     # instancia sem passar o commit como contexto
     codewise_instance = Codewise()
@@ -22,9 +33,6 @@ def verify_lgpd(caminho_dir_lgpd: str, policy_file_path: str, lgpd_judge_file_pa
 
     # salvando o resultado da analise da politica de coleta de dados
     resultado_policy = lgpd_check_crew.tasks[0].output
-
-    # definindo caminho e nome do arquivo final.
-    #policy_file_path = os.path.join(output_dir_path, "analise_politica_coleta_de_dados.md")
 
     try:
         with open(policy_file_path, "w", encoding="utf-8") as f:
@@ -46,13 +54,21 @@ def verify_lgpd(caminho_dir_lgpd: str, policy_file_path: str, lgpd_judge_file_pa
     except Exception as e:
         print(f"❌ ERRO - Ao salvar o arquivo 'julgamento_lgpd.md': {e}", file=sys.stderr)
 
-    # Verificação dos resultados da política de coleta de dados do provedor e model utilizados
+    #retorna o resultado do julgamento
     return verify_result_judgement(lgpd_judge_file_path)
     
 def verify_result_judgement(lgpd_judge_file_path) -> bool:
+    """
+    Verifica o resultado do julgamento LGPD no arquivo gerado.
+    
+    Args:
+        lgpd_judge_file_path: Caminho do arquivo de julgamento LGPD
+        
+    Returns:
+        bool: True se aprovado ('sim'), False se reprovado ('não')
+    """
     try:
         with open(lgpd_judge_file_path, "r", encoding="utf-8") as julgamento:
-            #print(julgamento.readline())
 
             for linha in julgamento:
                 linha_clean = linha.strip().lower()
@@ -71,6 +87,16 @@ def verify_result_judgement(lgpd_judge_file_path) -> bool:
         print(f"❌ ERRO - ao ler o arquivo 'julgamento_lgpd.md': {e}", file=sys.stderr)
 
 def verifica_se_existe_analise_lgpd(policy_file_path, lgpd_judge_file_path) -> bool:
+    """
+    Verifica se já existe uma análise LGPD para o provedor e modelo atuais.
+    
+    Args:
+        policy_file_path: Caminho do arquivo de análise de política
+        lgpd_judge_file_path: Caminho do arquivo de julgamento LGPD
+        
+    Returns:
+        bool: True se análise já existe para o provedor/modelo atual, False caso contrário
+    """
 
     provider = os.getenv("AI_PROVIDER").lower()
     model = os.getenv("AI_MODEL").lower()

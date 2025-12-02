@@ -1,4 +1,7 @@
 def main():
+    """
+    Exibe a mensagem de ajuda do CodeWise com comandos disponíveis e instruções de uso.
+    """
     print("""
 CodeWise CLI 
 

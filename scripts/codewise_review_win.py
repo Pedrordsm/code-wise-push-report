@@ -68,6 +68,15 @@ def run_codewise_mode(mode, repo_path, branch_name):
         return None 
 
 def obter_branch_padrao_remota(repo_path):
+    """
+    Obtém o nome da branch padrão do repositório remoto no GitHub.
+    
+    Args:
+        repo_path: Caminho para o repositório Git local
+        
+    Returns:
+        str: Nome da branch padrão (ex: 'main', 'master') ou 'main' como fallback
+    """
     try:
         remote_url_result = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], cwd=repo_path, text=True, encoding='utf-8').strip()
         match = re.search(r'github\.com/([^/]+/[^/]+?)(\.git)?$', remote_url_result)
@@ -84,11 +93,31 @@ def obter_branch_padrao_remota(repo_path):
         return "main"
 
 def extrair_titulo_valido(texto):
+    """
+    Extrai um título válido no formato Conventional Commits de um texto.
+    
+    Args:
+        texto: Texto contendo o título do commit
+        
+    Returns:
+        str ou None: Título extraído se encontrado (str), None caso contrário
+    """
     match = re.search(r"(feat|fix|refactor|docs):\s.+", texto, re.IGNORECASE)
     if match: return match.group(0).strip()
     return None
 
 def obter_pr_aberto_para_branch(branch, repo_dir, repo_slug):
+    """
+    Verifica se existe um Pull Request aberto para uma branch específica.
+    
+    Args:
+        branch: Nome da branch a verificar
+        repo_dir: Diretório do repositório local
+        repo_slug: Identificador do repositório no formato 'usuario/repo'
+        
+    Returns:
+        int ou None: Número do PR se encontrado (int), None caso contrário
+    """
     try:
         comando_list = [
             "gh", "pr", "list",
@@ -106,7 +135,16 @@ def obter_pr_aberto_para_branch(branch, repo_dir, repo_slug):
         return None
 
 def obter_repo_slug(remote_name, repo_path):
-    """Obtém o slug 'usuario/repo' de um remote específico ('origin' ou 'upstream')."""
+    """
+    Obtém o slug 'usuario/repo' de um remote específico do GitHub.
+    
+    Args:
+        remote_name: Nome do remote ('origin' ou 'upstream')
+        repo_path: Caminho para o repositório Git local
+        
+    Returns:
+        str ou None: Slug no formato 'usuario/repo' se encontrado (str), None caso contrário
+    """
     try:
         remote_url = subprocess.check_output(
             ["git", "config", "--get", f"remote.{remote_name}.url"],
@@ -120,7 +158,16 @@ def obter_repo_slug(remote_name, repo_path):
         return None
 
 def verificar_remote_existe(remote_name, repo_path):
-    """Verifica se um remote com o nome especificado existe."""
+    """
+    Verifica se um remote com o nome especificado existe no repositório.
+    
+    Args:
+        remote_name: Nome do remote a verificar (ex: 'origin', 'upstream')
+        repo_path: Caminho para o repositório Git local
+        
+    Returns:
+        bool: True se o remote existe, False caso contrário
+    """
     try:
         remotes = subprocess.check_output(["git", "remote"], cwd=repo_path, text=True, encoding='utf-8')
         return remote_name in remotes.split()
@@ -131,6 +178,9 @@ def verificar_remote_existe(remote_name, repo_path):
 # LÓGICA DO COMANDO 'codewise-lint' (PARA PRE-COMMIT)
 # ===================================================================
 def main_lint():
+    """
+    Executa análise rápida pré-commit do código staged.
+    """
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     repo_path = os.getcwd()
     try:
@@ -168,7 +218,13 @@ def main_lint():
 # ===================================================================
 
 def run_pr_logic(target_selecionado, pushed_branch):
-    """Função principal que contém toda a lógica de criação de PR."""
+    """
+    Função principal que contém toda a lógica de criação de Pull Request.
+    
+    Args:
+        target_selecionado: Nome do remote alvo ('origin' ou 'upstream')
+        pushed_branch: Nome da branch que está sendo enviada
+    """
 
     current_branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], text=True).strip()
 
@@ -310,7 +366,9 @@ def run_pr_logic(target_selecionado, pushed_branch):
 
 
 def main_pr_origin():
-    """Ponto de entrada para criar um PR no 'origin'."""
+    """
+    Ponto de entrada para criar um PR no 'origin'.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--pushed-branch", required=False, type=str, help="A branch que está sendo enviada.")
     args = parser.parse_args()
@@ -328,7 +386,9 @@ def main_pr_origin():
 
 
 def main_pr_upstream():
-    """Ponto de entrada para criar um PR no 'upstream'."""
+    """
+    Ponto de entrada para criar um PR no 'upstream'.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--pushed-branch", required=False, type=str, help="A branch que está sendo enviada.")
     args = parser.parse_args()
@@ -347,7 +407,9 @@ def main_pr_upstream():
 
 
 def main_pr_interactive():
-    """Função interativa para ser chamada manualmente pelo comando 'codewise-pr'."""
+    """
+    Função interativa para ser chamada manualmente pelo comando 'codewise-pr'.
+    """
     repo_path = os.getcwd()
 
     try:
@@ -389,6 +451,16 @@ def main_pr_interactive():
 
 
 def lgpd_check_user_choice(repo_path:str, branch_atual:str):
+    """
+    Verifica a conformidade LGPD e solicita autorização do usuário para envio de dados.
+    
+    Args:
+        repo_path: Caminho para o repositório Git local
+        branch_atual: Nome da branch atual sendo analisada
+        
+    Returns:
+        bool: True se o usuário autorizou, encerra o programa caso contrário
+    """
     caminho_dir_lgpd = os.path.join(repo_path, "analises-julgamento-lgpd")
     lgpd_judge_file_path = os.path.join(caminho_dir_lgpd, "julgamento_lgpd.md")
 

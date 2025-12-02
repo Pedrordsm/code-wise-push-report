@@ -3,6 +3,19 @@ from crewai import LLM
 import sys
 
 def create_llm(provider:str, model:str)-> LLM:
+    """
+    Cria e configura uma instância de LLM baseada no provedor especificado.
+    
+    Args:
+        provider: Nome do provedor ('GEMINI', 'OPENAI', 'GROQ', 'COHERE')
+        model: Nome do modelo a ser utilizado
+        
+    Returns:
+        LLM: Instância configurada do modelo de linguagem
+        
+    Raises:
+        SystemExit: Se a API key não estiver configurada ou houver erro na inicialização
+    """
     if provider == "GEMINI":
         if not os.getenv("GEMINI_API_KEY"):
             print("Erro: A variável de ambiente GEMINI_API_KEY não foi definida.")

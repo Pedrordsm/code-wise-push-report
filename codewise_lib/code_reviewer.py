@@ -3,8 +3,17 @@ import subprocess
 
 
 def coletar_dados_git(repo_path: str, commits_limit: int = 3) -> str:
+    """
+    Coleta informações detalhadas do repositório Git para análise de código.
+    
+    Args:
+        repo_path: Caminho para o repositório Git local
+        commits_limit: Número máximo de commits a analisar (padrão: 3)
+        
+    Returns:
+        str: Texto formatado com informações dos commits e diffs para análise
+    """
     try:
-        # Obtém email do usuário
         try:
             result = subprocess.run(
                 ['git', '-C', repo_path, 'config', 'user.email'],
@@ -16,7 +25,7 @@ def coletar_dados_git(repo_path: str, commits_limit: int = 3) -> str:
         except:
             user_email = "Desenvolvedor"
         
-        # Coleta informações dos últimos commits
+        #coleta de logs dos commits anteriores
         git_log_cmd = [
             'git', '-C', repo_path, 'log',
             f'-{commits_limit}',
@@ -32,7 +41,7 @@ def coletar_dados_git(repo_path: str, commits_limit: int = 3) -> str:
             text=True
         )
         
-        # Monta o contexto para análise
+        #formatação do resultado final
         resultado = []
         resultado.append("=" * 80)
         resultado.append(f"ANÁLISE DE CÓDIGO - {user_email}")
@@ -43,7 +52,7 @@ def coletar_dados_git(repo_path: str, commits_limit: int = 3) -> str:
         resultado.append(log_output)
         resultado.append("")
         
-        # Pega diff dos últimos commits
+        #coleta de diffs dos commits anteriores
         for i in range(commits_limit):
             try:
                 diff_cmd = ['git', '-C', repo_path, 'show', f'HEAD~{i}', '--unified=3']
