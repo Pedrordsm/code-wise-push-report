@@ -37,15 +37,10 @@ class CodewiseRunner:
 
 
         if(modo == 'lgpd_verify'):
-            if(verifica_se_existe_analise_lgpd(policy_file_path, lgpd_judge_file_path)):
-                print("\nA análise e verificação LGPD já foi feita anteriormente para este mesmo provedor e modelo api key. Por conta disso, não será necessário efetuá-la novamente! \n",file=sys.stderr)
-                print("Verificando o julgamento da análise existente...\n" ,file=sys.stderr)
-                verify_result_judgement(lgpd_judge_file_path)
-            else:
+            if not(verifica_se_existe_analise_lgpd(policy_file_path, lgpd_judge_file_path)):
                 print("Iniciando análise e julgamento LGPD...",file=sys.stderr)
-                verify_lgpd(caminho_repo, caminho_dir_lgpd, policy_file_path, lgpd_judge_file_path)
+                verify_lgpd(caminho_dir_lgpd, policy_file_path, lgpd_judge_file_path)
             return 0
-
 
         contexto_para_ia = ""
         if modo == 'lint':

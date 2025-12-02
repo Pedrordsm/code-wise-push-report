@@ -37,8 +37,8 @@ def run_codewise_mode(mode, repo_path, branch_name):
             stdin=subprocess.DEVNULL
         )
 
-        if result.stderr:
-            print(result.stderr, file=sys.stderr)
+        #if result.stderr:
+            #print(result.stderr, file=sys.stderr)
 
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
@@ -445,6 +445,11 @@ def main_pr_interactive():
     run_pr_logic(target_selecionado=target_selecionado, pushed_branch=current_branch)
 
 
+# ===================================================================
+# LÓGICA DO MODO INTERNO LGPD_VERIFY QUE CAPTURA INPUT DO USUÁRIO
+# ===================================================================
+
+
 def lgpd_check_user_choice(repo_path:str, branch_atual:str):
     """
     Verifica a conformidade LGPD e solicita autorização do usuário para envio de dados.
@@ -457,14 +462,12 @@ def lgpd_check_user_choice(repo_path:str, branch_atual:str):
         bool: True se o usuário autorizou, encerra o programa caso contrário
     """
     caminho_dir_lgpd = os.path.join(repo_path, "analises-julgamento-lgpd")
-    policy_file_path = os.path.join(caminho_dir_lgpd, "analise_politica_coleta_de_dados.md")
     lgpd_judge_file_path = os.path.join(caminho_dir_lgpd, "julgamento_lgpd.md")
 
     run_codewise_mode("lgpd_verify", repo_path, branch_atual)    
 
-
-    if not os.path.exists(policy_file_path):
-        sys.exit("Erro: O arquivo de política de dados não existe! Execute novamente para a análise ser feita.")
+    if not os.path.exists(caminho_dir_lgpd):
+        sys.exit("Erro: A pasta analises-julgamento-lgpd não existe! Execute novamente para efetuar a verificação LGPD.")
     
     try:
         with open(lgpd_judge_file_path, "r", encoding="utf-8") as f:
@@ -490,22 +493,21 @@ def lgpd_check_user_choice(repo_path:str, branch_atual:str):
                 print()
 
                 # Trecho utilizando biblioteca para receber o input direto do SO!
-                try:
-                    if sys.platform == 'win32':
-                        import msvcrt
-                        
-                        print("\nCom base na verificação apresentada acima, você gostaria de continuar com o envio de seus dados para o provedor e modelo de api key escolhido? [S/N]:")
-                        char = msvcrt.getwche()
-                        choice = char.upper()
-                        print()
+                # Se estiver no Windows
+                if sys.platform == 'win32':
+                    import msvcrt
                     
-                    else:
-                        with open("/dev/tty", "r") as tty:
-                            choice = tty.readline().strip().upper()
-                except Exception:
-                    choice = input().strip().upper()
+                    print("\nCom base na verificação apresentada acima, você gostaria de continuar com o envio de seus dados para o provedor e modelo de api key escolhido? [S/N]:")
+                    char = msvcrt.getwche()
+                    choice = char.upper()
+                    print()
+                # Se estiver no Linux/Mac
+                elif(sys.platform == 'linux' or sys.platform == 'darwin'):
+                    with open("/dev/tty", "r") as tty:
+                        choice = tty.readline().strip().upper()
+                else:
+                    choice = input("* Com base na verificação apresentada acima, você gostaria de continuar com o envio de seus dados para o provedor e modelo de api key escolhido? [S/N]: ").strip().upper()
 
-                
                 print()
                 if(choice == "S"):
                     print("-" * 40)
@@ -522,6 +524,9 @@ def lgpd_check_user_choice(repo_path:str, branch_atual:str):
                     print()
                     print("-" * 40)
                     sys.exit(0)
+    except FileNotFoundError as e:
+        print(f"❌ ERRO - Arquivo 'julgamento_lgpd.md' não existe: {e}", file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
         print(f"Erro em obter a autorização do usuário: {e}", file=sys.stderr)
         sys.exit(1)

@@ -4,12 +4,11 @@ import re
 from dotenv import load_dotenv
 from .crew import Codewise
 
-def verify_lgpd(caminho_repo: str, caminho_dir_lgpd: str, policy_file_path: str, lgpd_judge_file_path: str) -> bool:
+def verify_lgpd(caminho_dir_lgpd: str, policy_file_path: str, lgpd_judge_file_path: str) -> bool:
     """
     Executa a verificação de conformidade LGPD do provedor de IA definido no .env.
     
     Args:
-        caminho_repo: Caminho para o repositório Git
         caminho_dir_lgpd: Diretório para salvar as análises LGPD
         policy_file_path: Caminho do arquivo de análise de política
         lgpd_judge_file_path: Caminho do arquivo de julgamento LGPD
@@ -38,21 +37,22 @@ def verify_lgpd(caminho_repo: str, caminho_dir_lgpd: str, policy_file_path: str,
     try:
         with open(policy_file_path, "w", encoding="utf-8") as f:
             f.write(str(resultado_policy))
-            print(f"   - Arquivo 'analise_politica_coleta_de_dados.md' salvo com sucesso em '{caminho_dir_lgpd}'.", file=sys.stderr)
+            print(f"Arquivo 'analise_politica_coleta_de_dados.md' salvo com sucesso em '{caminho_dir_lgpd}'.", file=sys.stderr)
+    except FileNotFoundError as e:
+        print(f"❌ ERRO - Arquivo 'analise_politica_coleta_de_dados.md' não existe: {e}", file=sys.stderr)
     except Exception as e:
-        print(f"    - ERRO ao salvar o arquivo 'analise_politica_coleta_de_dados.md': {e}", file=sys.stderr)
-    
-    #salva o resultado do julgamento lgpd
-    resultado_lgpd = lgpd_check_crew.tasks[1].output
+        print(f"❌ ERRO - Ao salvar o arquivo 'analise_politica_coleta_de_dados.md': {e}", file=sys.stderr)
 
+    resultado_lgpd = lgpd_check_crew.tasks[1].output
 
     try:
         with open(lgpd_judge_file_path, "w", encoding="utf-8") as fj:
             fj.write(str(resultado_lgpd))
-            print(f"    - Arquivo 'julgamento_lgpd.md' salvo com sucesso em '{caminho_dir_lgpd}'.", file=sys.stderr)
+            print(f"✅ Arquivo 'julgamento_lgpd.md' salvo com sucesso em '{caminho_dir_lgpd}'.", file=sys.stderr)
+    except FileNotFoundError as e:
+        print(f"❌ ERRO - Arquivo 'julgamento_lgpd.md' não existe: {e}", file=sys.stderr)
     except Exception as e:
-        print(f"    - ERRO ao salvar o arquivo 'julgamento_lgpd.md': {e}", file=sys.stderr)
-    
+        print(f"❌ ERRO - Ao salvar o arquivo 'julgamento_lgpd.md': {e}", file=sys.stderr)
 
     #retorna o resultado do julgamento
     return verify_result_judgement(lgpd_judge_file_path)
@@ -81,8 +81,10 @@ def verify_result_judgement(lgpd_judge_file_path) -> bool:
                     return True
                 if (linha_clean == "não"):
                     return False
+    except FileNotFoundError as e:
+        print(f"❌ ERRO - Arquivo 'julgamento_lgpd.md' não existe: {e}", file=sys.stderr)
     except Exception as e:
-        print(f"    - ERRO ao ler o arquivo 'julgamento_lgpd.md': {e}", file=sys.stderr)
+        print(f"❌ ERRO - ao ler o arquivo 'julgamento_lgpd.md': {e}", file=sys.stderr)
 
 def verifica_se_existe_analise_lgpd(policy_file_path, lgpd_judge_file_path) -> bool:
     """
@@ -105,7 +107,6 @@ def verifica_se_existe_analise_lgpd(policy_file_path, lgpd_judge_file_path) -> b
     if(os.path.exists(policy_file_path) and os.path.exists(lgpd_judge_file_path)):
         try:
             with open(policy_file_path, "r", encoding="utf-8") as f:
-
                 for linha in f:
                     linha_clean = linha.strip().lower()
 
@@ -116,7 +117,9 @@ def verifica_se_existe_analise_lgpd(policy_file_path, lgpd_judge_file_path) -> b
                         return True
                     if(not linha):
                         return False
+        except FileNotFoundError as e:
+            print(f"❌ ERRO - Arquivo 'analise_politica_coleta_de_dados.md' não existe: {e}", file=sys.stderr)
         except Exception as e:
-            print(f"    - ERRO ao ler o arquivo 'analise_politica_coleta_de_dados.md': {e}", file=sys.stderr)    
+            print(f"❌ ERRO - ao ler o arquivo 'analise_politica_coleta_de_dados.md': {e}", file=sys.stderr)    
     else:
         return False 
