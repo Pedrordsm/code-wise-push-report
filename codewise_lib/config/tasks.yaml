@@ -57,9 +57,11 @@ policy_analytics:
 
 lgpd_judging:
   description: >
-    Com base nas leis LGPD e no relatório da analise da documentação,
+    Com base nas leis LGPD e no relatório da analise da documentação fornecida pela tarefa anterior,
     determine se o provedor da api key está respeitando ou não as leis LGPD e justifique o julgamento apontando as provas, por meio de um relatório, onde a primeira linha **exatamente na linha 1** do arquivo é a resposta antecipada (sim ou não).
-    Lembre-se de usar a ferramenta para buscar as leis LGPD do site oficial (gov.br). Além disso, coloque a conclusão sempre no final do arquivo.
+    Lembre-se de usar a ferramenta para buscar as leis LGPD do site oficial (gov.br) e de utilizar o contexto (análise) da tarefa anterior. Além disso, coloque a conclusão sempre no final do arquivo.
+    Monta o relatório de maneira CLEAN, e bem separado por tópicos (Breve introdução --> Análise da Conformidade com a LGPD --> Conclusão --> artigos LGPD utilizados --> referências).
+    Após os tópicos: Referências, coloque em uma linha única, *fim referências*, para indicar o fim da conclusão.
   expected_output: >
     Documento julgamento_lgpd.md com as provas ou artigos utilizados para determinar a decisão tomada.
   agent: lgpd_judge
