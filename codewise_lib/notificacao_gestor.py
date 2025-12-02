@@ -9,6 +9,15 @@ load_dotenv()
 
 
 def enviar_telegram(mensagem: str) -> bool:
+    """
+    Envia uma mensagem via Telegram Bot API.
+    
+    Args:
+        mensagem: Texto da mensagem que será enviada
+        
+    Returns:
+        bool: True se enviado, False caso contrário
+    """
     telegram_token = os.getenv("TELEGRAM_BOT_TOKEN")
     telegram_chat_id = os.getenv("TELEGRAM_CHAT_ID")
     
@@ -40,52 +49,57 @@ def enviar_telegram(mensagem: str) -> bool:
 
 
 def processar_avaliacao_e_notificar(caminho_arquivo: str, email_dev: str, repo_path: str) -> bool:
+    """
+    Processa o arquivo de avaliação de código e envia notificação ao gestor.
+    
+    Args:
+        caminho_arquivo: Caminho do arquivo de avaliação gerado
+        email_dev: Email do desenvolvedor avaliado
+        repo_path: Caminho do repositório Git
+        
+    Returns:
+        bool: True se notificação for enviada com sucesso, False caso contrário
+    """
     try:
-        # Lê o arquivo linha por linha
         nota = 0.0
         justificativa_linhas = []
         capturando_breakdown = False
         
         with open(caminho_arquivo, 'r', encoding='utf-8') as f:
             for linha in f:
-                # Limpa a linha
                 linha_clean = linha.strip()
                 
-                # Procura pela nota
+                #varre o arquivo gerado procurando a nota final
                 if 'nota final' in linha_clean.lower():
-                    # Remove caracteres especiais
                     linha_limpa = re.sub(r'[*_#>`~]', '', linha_clean)
                     linha_limpa = linha_limpa.strip()
                     
-                    # Extrai o número
+                    #pega a nota
                     nota_match = re.search(r'(\d+\.?\d*)', linha_limpa)
                     if nota_match:
                         nota = float(nota_match.group(1))
                         print(f"   ✓ Nota encontrada: {nota}/10", file=sys.stderr)
                 
-                # Procura pelo início do breakdown
+                #varre o arquivo procurando o breakdown de pontos
                 if 'breakdown de pontos' in linha_clean.lower():
                     capturando_breakdown = True
                     continue
                 
-                # Para de capturar quando encontrar "Justificativa detalhada"
+                #aborta a captura ao encontrar a seção de 'justificativa detalhada' no arquivo
                 if capturando_breakdown and 'justificativa detalhada' in linha_clean.lower():
                     break
                 
-                # Captura linhas do breakdown até "Justificativa"
                 if capturando_breakdown:
                     # Remove caracteres especiais
                     linha_limpa = re.sub(r'[*_#>`~]', '', linha_clean)
                     linha_limpa = linha_limpa.strip()
                     
                     if linha_limpa:
-                        # Adiciona a linha com quebra de linha
                         justificativa_linhas.append(linha_limpa)
         
-        # Monta a justificativa com quebras de linha
+        #justificativa final da nota
         justificativa = '\n'.join(justificativa_linhas)
         
-        # Limita a 4000 caracteres para o Telegram
         if len(justificativa) > 4000:
             justificativa = justificativa[:3997] + "..."
         
@@ -95,14 +109,12 @@ def processar_avaliacao_e_notificar(caminho_arquivo: str, email_dev: str, repo_p
             print(f"   ⚠️  Justificativa não encontrada", file=sys.stderr)
             justificativa = "Avaliação concluída."
         
-        # Obtém nome do repositório
+        #nome do repositório
         repo_nome = os.path.basename(repo_path)
         
-        # Prepara mensagem para Telegram
-        # Nota é de 0 a 10, então ajusta os limites
+        #visual para a nota
         emoji_nota = "🟢" if nota >= 8.5 else "🟡" if nota >= 7.0 else "🔴"
         
-        # Escapa caracteres especiais do Markdown
         justificativa_escaped = justificativa.replace('*', '\\*').replace('_', '\\_').replace('[', '\\[').replace('`', '\\`')
         
         mensagem = f"""
@@ -118,7 +130,7 @@ def processar_avaliacao_e_notificar(caminho_arquivo: str, email_dev: str, repo_p
 📅 *Data:* {datetime.now().strftime("%d/%m/%Y %H:%M")}
 """
         
-        # Envia notificação
+        #faz o envio pro telegram já formatado
         telegram_ok = enviar_telegram(mensagem)
         
         return telegram_ok

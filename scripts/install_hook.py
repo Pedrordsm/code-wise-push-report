@@ -21,6 +21,15 @@ exit 0
 """
 
 def verificar_remote_existe(remote_name):
+    """
+    Verifica se um remote Git com o nome especificado existe no repositório atual.
+    
+    Args:
+        remote_name: Nome do remote a verificar (ex: 'origin', 'upstream')
+        
+    Returns:
+        bool: True se o remote existe, False caso contrário
+    """
     try:
         repo_path = os.getcwd() 
         remotes = subprocess.check_output(["git", "remote"], cwd=repo_path, text=True, encoding='utf-8')
@@ -29,6 +38,17 @@ def verificar_remote_existe(remote_name):
         return False
 
 def install_hook(hook_name, hook_content, repo_root):
+    """
+    Instala um hook Git no repositório especificado.
+    
+    Args:
+        hook_name: Nome do hook (ex: 'pre-commit', 'pre-push')
+        hook_content: Conteúdo do script do hook
+        repo_root: Caminho raiz do repositório
+        
+    Returns:
+        bool: True se instalado com sucesso, False caso contrário
+    """
     hooks_dir = os.path.join(repo_root, '.git', 'hooks')
     if not os.path.isdir(hooks_dir):
         print(f"❌ Erro: Diretório de hooks do Git não encontrado em '{hooks_dir}'.", file=sys.stderr)
@@ -47,6 +67,10 @@ def install_hook(hook_name, hook_content, repo_root):
         return False
 
 def main():
+    """
+    Ponto de entrada principal para instalação de hooks Git do CodeWise.
+    Permite instalar hooks de pre-commit e/ou pre-push, --all para instalar ambos juntos.
+    """
     parser = argparse.ArgumentParser(description="Instalador de hooks do CodeWise.")
     parser.add_argument('--commit', action='store_true', help='Instala o hook pre-commit.')
     parser.add_argument('--push', action='store_true', help='Instala o hook pre-push.')

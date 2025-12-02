@@ -17,19 +17,25 @@ from .tools.git_analysis_tool import GitAnalysisTool, GitBlameAnalysisTool
 class Codewise:
     """Classe principal da crew Codewise"""
     def __init__(self, commit_message: str = ""):
+        """
+        Inicializa a crew Codewise com agentes e configurações.
+        
+        Args:
+            commit_message: Mensagem de commit ou contexto para análise (opcional)
+        """
         load_dotenv()
+        #configurações iniciais da llm e agentes
         self.commit_message = commit_message
-        # self para utilizar na task de analise da politica
         self.provider = os.getenv("AI_PROVIDER").upper()
         self.model = os.getenv("AI_MODEL")
-        ##
         self.llm = create_llm(self.provider,self.model)
 
-        #tools
+        #tools iniciais
         self.web_search_tool = WebsiteSearchTool()
         self.git_analysis_tool = GitAnalysisTool()
         self.git_blame_tool = GitBlameAnalysisTool()
         
+        #carregamento de configurações de agentes e tarefas
         base_dir = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(base_dir, "config")
         agents_path = os.path.join(config_path, "agents.yaml")
@@ -44,6 +50,7 @@ class Codewise:
             print(f"Erro: Arquivo de configuração não encontrado: {e}")
             sys.exit(1)
 
+    #definição dos agentes disponíveis
     @agent
     def senior_architect(self) -> Agent: return Agent(config=self.agents_config['senior_architect'], llm=self.llm, verbose=False)
     @agent
@@ -66,6 +73,7 @@ class Codewise:
     @agent
     def code_reviewer(self) -> Agent: return Agent(config=self.agents_config['code_reviewer'], llm=self.llm, verbose=True)
     
+    #definição das tarefas disponíveis para cada agente
     @task
     def task_estrutura(self) -> Task:
         cfg = self.tasks_config['analise_estrutura']
@@ -114,6 +122,7 @@ class Codewise:
         return Task(description=cfg['description'], expected_output=cfg['expected_output'], agent=self.code_reviewer())
 
 
+    #definição da crew principal
     @crew
     def crew(self) -> Crew:
         return Crew(
@@ -123,6 +132,12 @@ class Codewise:
         )
 
     def summary_crew(self) -> Crew:
+        """
+        Cria uma crew especializada em gerar resumos executivos.
+        
+        Returns:
+            Crew: Instância da crew de resumo
+        """
         return Crew(
             agents=[self.summary_specialist()],
             tasks=[self.task_summarize()],
@@ -130,6 +145,12 @@ class Codewise:
         )
 
     def lgpd_crew(self) -> Crew:
+        """
+        Cria uma crew especializada em análise de conformidade com a LGPD.
+        
+        Returns:
+            Crew: Instância da crew de análise LGPD
+        """
         return Crew(
             agents=[self.dataCollect_policy_analytics(), self.lgpd_judge()],
             tasks=[self.task_policy(), self.task_judging()],
@@ -137,6 +158,12 @@ class Codewise:
         )
     
     def code_review_crew(self) -> Crew:
+        """
+        Cria uma crew especializada em revisão e avaliação de código.
+        
+        Returns:
+            Crew: Instância da crew de code review
+        """
         return Crew(
             agents=[self.code_reviewer()],
             tasks=[self.task_code_review()],

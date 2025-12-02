@@ -10,15 +10,31 @@ from .notificacao_gestor import processar_avaliacao_e_notificar
 
 
 class CodewiseRunner:
+    """
+    Classe responsável por organizar a execução das análises do CodeWise.
+    Gerencia diferentes modos de operação (lint, titulo, descricao, analise, lgpd_verify).
+    """
     def __init__(self):
+        """
+        Inicializa o CodewiseRunner com os caminhos necessários.
+        """
         self.BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         self.caminho_entrada = os.path.join(self.BASE_DIR, ".entrada_temp.txt")
 
     def executar(self, caminho_repo: str, nome_branch: str, modo: str):
+        """
+        Executa a análise de código no modo especificado.
+        
+        Args:
+            caminho_repo: Caminho para o repositório Git
+            nome_branch: Nome da branch a ser analisada
+            modo: Modo de operação ('lint', 'titulo', 'descricao', 'analise', 'lgpd_verify')
+        """
 
         caminho_dir_lgpd = os.path.join(caminho_repo, "analises-julgamento-lgpd")
         policy_file_path = os.path.join(caminho_dir_lgpd, "analise_politica_coleta_de_dados.md")
         lgpd_judge_file_path = os.path.join(caminho_dir_lgpd, "julgamento_lgpd.md")
+
 
         if(modo == 'lgpd_verify'):
             if(verifica_se_existe_analise_lgpd(policy_file_path, lgpd_judge_file_path)):
@@ -32,7 +48,6 @@ class CodewiseRunner:
 
 
         contexto_para_ia = ""
-
         if modo == 'lint':
             resultado_git = obter_mudancas_staged(caminho_repo)
             
@@ -53,15 +68,18 @@ class CodewiseRunner:
         codewise_instance = Codewise(commit_message=contexto_para_ia)
         resultado_final = ""
 
+
         if modo == 'titulo':
             agent = codewise_instance.summary_specialist()
             task = Task(description=f"Crie um título de PR conciso no padrão Conventional Commits para as seguintes mudanças. A resposta deve ser APENAS o título, **obrigatoriamente em Português do Brasil**, sem aspas, acentos graves ou qualquer outro texto:\n{contexto_para_ia}", expected_output="Um único título de PR.", agent=agent)
             resultado_final = Crew(agents=[agent], tasks=[task]).kickoff()
 
+
         elif modo == 'descricao':
             agent = codewise_instance.summary_specialist()
             task = Task(description=f"Crie uma descrição de um parágrafo **obrigatoriamente em Português do Brasil** para um Pull Request para as seguintes mudanças:\n{contexto_para_ia}", expected_output="Um único parágrafo de texto.", agent=agent)
             resultado_final = Crew(agents=[agent], tasks=[task]).kickoff()
+
 
         elif modo == 'analise':
             analysis_crew = codewise_instance.crew()
@@ -120,20 +138,18 @@ class CodewiseRunner:
             except Exception as e:
                 print(f"   - ERRO ao salvar o arquivo 'sugestoes_aprendizado.md': {e}", file=sys.stderr)
             
-            # Executa Code Review automaticamente após a análise (similar ao LGPD)
+
+            #avaliação de código e notificação para o gestor
             print("\n🔍 Gerando avaliação de código...", file=sys.stderr)
+            #coleta de dados git para análise
             try:
-                # Coleta dados Git
                 dados_git = coletar_dados_git(caminho_repo, commits_limit=3)
                 
                 if "Erro" not in dados_git:
-                    # Cria crew de code review
                     code_review_crew = codewise_instance.code_review_crew()
                     
-                    # Executa a avaliação
                     code_review_crew.kickoff(inputs={'input': dados_git})
                     
-                    # Salva o resultado
                     resultado_review = code_review_crew.tasks[0].output
                     review_file_path = os.path.join(output_dir_path, "avaliacao_codigo.md")
                     
@@ -141,7 +157,8 @@ class CodewiseRunner:
                         f.write(str(resultado_review))
                     
                     print(f"   - Arquivo 'avaliacao_codigo.md' salvo com sucesso.", file=sys.stderr)
-                    # Envia notificação para o gestor
+
+                    #obtenção do email do desenvolvedor
                     try:
                         import subprocess
                         email_dev = subprocess.check_output(
@@ -159,7 +176,8 @@ class CodewiseRunner:
                     
             except Exception as e:
                 print(f"   - Aviso: Não foi possível gerar avaliação de código: {str(e)}", file=sys.stderr)
-                
+        
+
         elif modo == 'lint':
             agent = codewise_instance.quality_consultant()
             task = Task(description=f"Analise rapidamente as seguintes mudanças de código ('git diff') e aponte APENAS problemas óbvios ou code smells. A resposta deve ser **obrigatoriamente em Português do Brasil**. Seja conciso. Se não houver problemas, retorne 'Nenhum problema aparente detectado.'.\n\nCódigo a ser analisado:\n{contexto_para_ia}", expected_output="Uma lista curta em bullet points com sugestões, ou uma mensagem de que está tudo ok.", agent=agent)
@@ -172,6 +190,15 @@ class CodewiseRunner:
 
         
     def _ler_arquivo(self, file_path: str) -> str:
+        """
+        Lê o conteúdo de um arquivo de texto.
+        
+        Args:
+            file_path: Caminho do arquivo a ser lido
+            
+        Returns:
+            str: Conteúdo do arquivo ou string vazia se não encontrado
+        """
         try:
             with open(file_path, "r", encoding="utf-8") as f: return f.read()
         except FileNotFoundError: return ""
