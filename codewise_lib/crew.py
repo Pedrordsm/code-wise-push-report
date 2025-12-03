@@ -11,7 +11,6 @@ from crewai_tools import (
     WebsiteSearchTool
 )
 
-from .tools.git_analysis_tool import GitAnalysisTool, GitBlameAnalysisTool
 
 @CrewBase
 class Codewise:
@@ -32,8 +31,6 @@ class Codewise:
 
         #tools iniciais
         self.web_search_tool = WebsiteSearchTool()
-        self.git_analysis_tool = GitAnalysisTool()
-        self.git_blame_tool = GitBlameAnalysisTool()
         
         #carregamento de configurações de agentes e tarefas
         base_dir = os.path.dirname(os.path.abspath(__file__))
